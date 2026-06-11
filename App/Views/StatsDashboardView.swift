@@ -1,19 +1,22 @@
 import SwiftUI
-import Charts
 import PokerEngine
 
+// Always-fits dashboard: every row has a bounded height, with detail one tap
+// away (outs expand inline). The win-%-by-street chart lives in the hand-end
+// result view, not here.
 struct StatsDashboardView: View {
     @ObservedObject var model: GameViewModel
+    @State private var outsExpanded = false
+
+    /// Out chips shown in the collapsed row before "+N more".
+    private static let outsPreviewCount = 6
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 12) {
             if let stats = model.stats {
                 gaugesRow(stats)
-                if !model.equityHistory.isEmpty {
-                    equityChart
-                }
                 if !stats.outs.isEmpty {
-                    outsSection(stats)
+                    outsRow(stats)
                 }
                 potOddsRow(stats)
             } else {
@@ -25,12 +28,13 @@ struct StatsDashboardView: View {
                 .frame(maxWidth: .infinity)
             }
         }
-        .padding(16)
+        .padding(14)
         .background(RoundedRectangle(cornerRadius: 20).fill(Color(.secondarySystemGroupedBackground)))
+        .onChange(of: model.engine.handNumber) { outsExpanded = false }
     }
 
     private func gaugesRow(_ stats: HandStats) -> some View {
-        HStack(spacing: 18) {
+        HStack(spacing: 16) {
             VStack(spacing: 2) {
                 Gauge(value: stats.equity.win) {
                     EmptyView()
@@ -59,10 +63,11 @@ struct StatsDashboardView: View {
                     .foregroundStyle(.secondary)
             }
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(stats.madeHandName)
                     .font(.system(.subheadline, design: .rounded, weight: .semibold))
                     .lineLimit(2)
+                    .minimumScaleFactor(0.8)
                 ProgressView(value: Double(stats.category.rawValue), total: 8)
                     .tint(winColor(Double(stats.category.rawValue) / 8))
                 Text("vs \(stats.opponents) opponent\(stats.opponents > 1 ? "s" : "")")
@@ -73,50 +78,53 @@ struct StatsDashboardView: View {
         }
     }
 
-    private var equityChart: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("WIN % BY STREET")
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
-            Chart(model.equityHistory) { entry in
-                BarMark(
-                    x: .value("Street", entry.street),
-                    y: .value("Win %", entry.value * 100)
-                )
-                .foregroundStyle(winColor(entry.value).gradient)
-                .cornerRadius(4)
-                .annotation(position: .top) {
-                    Text("\(Int((entry.value * 100).rounded()))")
-                        .font(.system(size: 9, weight: .semibold, design: .rounded))
+    private func outsRow(_ stats: HandStats) -> some View {
+        let outs = stats.outs
+        let expandable = outs.count > Self.outsPreviewCount
+        return Button {
+            guard expandable else { return }
+            withAnimation(.spring(duration: 0.3)) { outsExpanded.toggle() }
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("OUTS — \(outs.count) CARD\(outs.count == 1 ? " IMPROVES" : "S IMPROVE") YOUR HAND")
+                        .font(.caption2.weight(.semibold))
                         .foregroundStyle(.secondary)
+                    Spacer()
+                    if expandable {
+                        Image(systemName: outsExpanded ? "chevron.up" : "chevron.down")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                if outsExpanded {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 34), spacing: 5)], spacing: 5) {
+                        ForEach(outs) { out in outChip(out.card) }
+                    }
+                } else {
+                    HStack(spacing: 5) {
+                        ForEach(outs.prefix(Self.outsPreviewCount)) { out in outChip(out.card) }
+                        if expandable {
+                            Text("+\(outs.count - Self.outsPreviewCount) more")
+                                .font(.system(.caption2, design: .rounded, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 0)
+                    }
                 }
             }
-            .chartXScale(domain: ["Pre", "Flop", "Turn", "River"])
-            .chartYScale(domain: 0...100)
-            .chartYAxis {
-                AxisMarks(values: [0, 25, 50, 75, 100])
-            }
-            .frame(height: 110)
         }
+        .buttonStyle(.plain)
     }
 
-    private func outsSection(_ stats: HandStats) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("OUTS — \(stats.outs.count) CARDS IMPROVE YOUR HAND")
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 30), spacing: 5)], spacing: 5) {
-                ForEach(stats.outs) { out in
-                    VStack(spacing: 1) {
-                        Text(out.card.text)
-                            .font(.system(.footnote, design: .rounded, weight: .bold))
-                            .foregroundStyle(out.card.suit.isRed ? Color(red: 0.82, green: 0.18, blue: 0.18) : .primary)
-                    }
-                    .frame(minWidth: 30, minHeight: 26)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(Color(.tertiarySystemGroupedBackground)))
-                }
-            }
-        }
+    private func outChip(_ card: Card) -> some View {
+        Text(card.text)
+            .font(.system(.footnote, design: .rounded, weight: .bold))
+            .foregroundStyle(card.suit.isRed ? Color(red: 0.82, green: 0.18, blue: 0.18) : .primary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .frame(minWidth: 34, minHeight: 26)
+            .background(RoundedRectangle(cornerRadius: 6).fill(Color(.tertiarySystemGroupedBackground)))
     }
 
     @ViewBuilder
