@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-06-11
+
 ### Fixed
 - Coach advice no longer overflows: the recommendation is now a one-line bar
   pinned above the action buttons (badge + made hand + win % + required %),
@@ -79,7 +81,8 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/MURD0X/PokerCoach/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/MURD0X/PokerCoach/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/MURD0X/PokerCoach/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/MURD0X/PokerCoach/compare/v1.1.0...v1.1.1
