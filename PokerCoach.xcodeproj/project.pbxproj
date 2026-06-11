@@ -136,6 +136,7 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					CF03D15E6D61237AEBCB53F1 = {
+						DevelopmentTeam = QGP85P4MZ7;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -202,6 +203,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 7;
+				DEVELOPMENT_TEAM = QGP85P4MZ7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -225,6 +227,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 7;
+				DEVELOPMENT_TEAM = QGP85P4MZ7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
