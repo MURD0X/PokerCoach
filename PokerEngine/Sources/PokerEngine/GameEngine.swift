@@ -51,6 +51,7 @@ public final class GameEngine {
     public private(set) var handNumber = 0
     public private(set) var log: [LogEntry] = []
     public private(set) var actingIndex: Int?
+    public private(set) var lastResult: HandResult?
 
     /// Set by the UI layer; suspends the engine until the hero decides.
     public var heroActionProvider: (() async -> HeroAction)?
@@ -97,6 +98,7 @@ public final class GameEngine {
         deck = Deck.shuffled()
         currentBet = 0
         minRaise = GameEngine.bigBlind
+        lastResult = nil
 
         for i in players.indices {
             if players[i].stack == 0 { // rebuy so the lesson continues
@@ -152,7 +154,13 @@ public final class GameEngine {
                 let pot = totalPot
                 players[winnerIdx].stack += pot
                 for i in players.indices { players[i].totalBet = 0 }
-                emit("\(players[winnerIdx].name) wins \(pot) — everyone else folded.", .win)
+                let winner = players[winnerIdx].name
+                lastResult = HandResult(
+                    potTotal: pot, showdowns: [], winnerNames: [winner],
+                    headline: "\(winner) win\(winnerIdx == 0 ? "" : "s") \(pot) — everyone else folded",
+                    explanation: nil, winningCards: []
+                )
+                emit("\(winner) wins \(pot) — everyone else folded.", .win)
                 stage = .done
                 actingIndex = nil
                 notify()
@@ -318,9 +326,11 @@ public final class GameEngine {
             let score = HandEvaluator.bestScore(p.hole + board)
             emit("\(p.name) shows \(p.hole.map(\.text).joined(separator: " ")) — \(HandEvaluator.name(of: score)).")
         }
+        let potTotal = totalPot
         let pots = GameEngine.buildPots(contributions: players.map { ($0.totalBet, $0.folded, $0.id) })
         for i in players.indices { players[i].totalBet = 0 }
 
+        var amountWon: [Int: Int] = [:]
         for (potIndex, pot) in pots.enumerated() {
             var bestScore = -1
             for id in pot.eligible {
@@ -334,11 +344,53 @@ public final class GameEngine {
                 let extra = remainder > 0 ? 1 : 0
                 remainder -= extra
                 players[id].stack += share + extra
+                amountWon[id, default: 0] += share + extra
             }
             let label = pots.count > 1 ? (potIndex == 0 ? "main pot" : "side pot \(potIndex)") : "the pot"
             let names = winners.map { players[$0].name }.joined(separator: " and ")
             emit("\(names) win\(winners.count == 1 ? "s" : "") \(label) of \(pot.amount) with \(HandEvaluator.name(of: bestScore)).", .win)
         }
+
+        lastResult = composeShowdownResult(potTotal: potTotal, amountWon: amountWon)
         notify()
+    }
+
+    private func composeShowdownResult(potTotal: Int, amountWon: [Int: Int]) -> HandResult {
+        var showdowns: [HandResult.PlayerShowdown] = []
+        for p in players where !p.folded {
+            let (score, bestFive) = HandEvaluator.best(p.hole + board)
+            showdowns.append(HandResult.PlayerShowdown(
+                playerID: p.id, name: p.name, hole: p.hole,
+                handName: HandEvaluator.name(of: score), score: score,
+                bestFive: bestFive, amountWon: amountWon[p.id] ?? 0
+            ))
+        }
+        showdowns.sort { $0.amountWon != $1.amountWon ? $0.amountWon > $1.amountWon : $0.score > $1.score }
+
+        let winners = showdowns.filter(\.isWinner)
+        let losers = showdowns.filter { !$0.isWinner }
+        let winnerNames = winners.map(\.name)
+        let top = winners[0]
+
+        let headline: String
+        if winners.count > 1 && winners.allSatisfy({ $0.score == top.score }) {
+            headline = "\(winnerNames.joined(separator: " and ")) split the pot of \(potTotal) with \(top.handName)"
+        } else if winners.count > 1 {
+            // Different winners across side pots.
+            headline = "\(top.name) win\(top.playerID == 0 ? "" : "s") \(top.amountWon) with \(top.handName)"
+        } else {
+            headline = "\(top.name) win\(top.playerID == 0 ? "" : "s") \(top.amountWon) with \(top.handName)"
+        }
+
+        var explanation: String?
+        if let bestLoser = losers.max(by: { $0.score < $1.score }), bestLoser.score < top.score {
+            explanation = HandResult.comparisonLine(winnerScore: top.score, loserScore: bestLoser.score)
+        }
+
+        return HandResult(
+            potTotal: potTotal, showdowns: showdowns, winnerNames: winnerNames,
+            headline: headline, explanation: explanation,
+            winningCards: Set(winners.flatMap(\.bestFive))
+        )
     }
 }

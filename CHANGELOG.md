@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Hand results are now explicit: a result banner shows who won, how much,
+  and with what hand; the five winning cards glow on the table; and a
+  per-player recap explains why the winner beats the best losing hand
+  (e.g. "Ace-high Flush beats Two Pair, Kings and Nines").
+
 ## [1.0.0] - 2026-06-10
 
 ### Added

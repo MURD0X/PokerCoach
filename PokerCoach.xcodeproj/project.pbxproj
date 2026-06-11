@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0E2A559C0125DFFBD04B5806 /* PokerEngine in Frameworks */ = {isa = PBXBuildFile; productRef = D04CA99D8EFE986F13E6B625 /* PokerEngine */; };
 		2A32EC575482D191316C96FC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C52D30E015B07FB67CA71085 /* ContentView.swift */; };
+		41F3768EE2AE2395A5F54BF6 /* ResultBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */; };
 		5CFE0B3C27D2112EC556BBD8 /* StatsDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2163486976D59A63CEEFC6A0 /* StatsDashboardView.swift */; };
 		683DA86231180A71954CCE87 /* PokerCoachApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6EADD7BE62F6A280838F0E /* PokerCoachApp.swift */; };
 		6EE55F94F73981FC17C63E83 /* TableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9728FE05D561D9DA3C1A2B9C /* TableView.swift */; };
@@ -23,6 +24,7 @@
 		180FEF3C6CE85924D840BD60 /* ControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlsView.swift; sourceTree = "<group>"; };
 		2163486976D59A63CEEFC6A0 /* StatsDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsDashboardView.swift; sourceTree = "<group>"; };
 		3C6EC32705BD6CE2CD2951A4 /* LessonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonsView.swift; sourceTree = "<group>"; };
+		45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultBannerView.swift; sourceTree = "<group>"; };
 		702E372D6D3213428789FDA4 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		9728FE05D561D9DA3C1A2B9C /* TableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView.swift; sourceTree = "<group>"; };
 		9F458EE63CC7EE7CDD74705D /* PokerCoach.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PokerCoach.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,6 +54,7 @@
 				180FEF3C6CE85924D840BD60 /* ControlsView.swift */,
 				3C6EC32705BD6CE2CD2951A4 /* LessonsView.swift */,
 				702E372D6D3213428789FDA4 /* LogView.swift */,
+				45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */,
 				2163486976D59A63CEEFC6A0 /* StatsDashboardView.swift */,
 				9728FE05D561D9DA3C1A2B9C /* TableView.swift */,
 			);
@@ -164,6 +167,7 @@
 				E5A9EBC758E9B75BF41FA149 /* LessonsView.swift in Sources */,
 				9B94EE156CC25CC07366164F /* LogView.swift in Sources */,
 				683DA86231180A71954CCE87 /* PokerCoachApp.swift in Sources */,
+				41F3768EE2AE2395A5F54BF6 /* ResultBannerView.swift in Sources */,
 				5CFE0B3C27D2112EC556BBD8 /* StatsDashboardView.swift in Sources */,
 				6EE55F94F73981FC17C63E83 /* TableView.swift in Sources */,
 			);

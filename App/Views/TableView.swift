@@ -11,6 +11,11 @@ struct TableView: View {
             (engine.stage == .done && engine.players.filter { !$0.folded }.count > 1)
     }
 
+    private var winningCards: Set<Card> {
+        guard engine.stage == .done || engine.stage == .showdown else { return [] }
+        return engine.lastResult?.winningCards ?? []
+    }
+
     var body: some View {
         VStack(spacing: 18) {
             HStack(alignment: .top, spacing: 10) {
@@ -20,7 +25,8 @@ struct TableView: View {
                         isDealer: engine.dealerIndex == player.id && engine.stage != .idle,
                         isActing: engine.actingIndex == player.id,
                         showCards: revealAll && !player.folded,
-                        cardWidth: 32
+                        cardWidth: 32,
+                        winningCards: winningCards
                     )
                 }
             }
@@ -37,7 +43,8 @@ struct TableView: View {
                 HStack(spacing: 7) {
                     ForEach(0..<5, id: \.self) { i in
                         if i < engine.board.count {
-                            CardView(face: .up(engine.board[i]), width: 46)
+                            CardView(face: .up(engine.board[i]), width: 46,
+                                     glow: winningCards.contains(engine.board[i]))
                         } else {
                             CardView(face: .placeholder, width: 46)
                         }
@@ -50,7 +57,8 @@ struct TableView: View {
                 isDealer: engine.dealerIndex == 0 && engine.stage != .idle,
                 isActing: engine.actingIndex == 0,
                 showCards: true,
-                cardWidth: 52
+                cardWidth: 52,
+                winningCards: winningCards
             )
         }
         .padding(.vertical, 22)
@@ -80,6 +88,7 @@ struct SeatView: View {
     let isActing: Bool
     let showCards: Bool
     let cardWidth: CGFloat
+    var winningCards: Set<Card> = []
 
     var body: some View {
         VStack(spacing: 5) {
@@ -102,7 +111,8 @@ struct SeatView: View {
             if player.hole.count == 2 {
                 HStack(spacing: 4) {
                     ForEach(player.hole) { card in
-                        CardView(face: showCards || player.isHero ? .up(card) : .down, width: cardWidth)
+                        CardView(face: showCards || player.isHero ? .up(card) : .down, width: cardWidth,
+                                 glow: showCards && !player.folded && winningCards.contains(card))
                     }
                 }
             }

@@ -10,6 +10,7 @@ struct CardView: View {
 
     let face: Face
     var width: CGFloat = 44
+    var glow = false
 
     private var height: CGFloat { width * 1.42 }
     private var corner: CGFloat { width * 0.18 }
@@ -28,8 +29,12 @@ struct CardView: View {
                     }
                     .foregroundStyle(card.suit.isRed ? Color(red: 0.82, green: 0.18, blue: 0.18) : Color(white: 0.12))
                 )
+                .overlay(
+                    RoundedRectangle(cornerRadius: corner)
+                        .strokeBorder(Color.yellow, lineWidth: glow ? 2.5 : 0)
+                )
                 .frame(width: width, height: height)
-                .shadow(color: .black.opacity(0.18), radius: 3, y: 2)
+                .shadow(color: glow ? .yellow.opacity(0.8) : .black.opacity(0.18), radius: glow ? 6 : 3, y: glow ? 0 : 2)
                 .transition(.scale(scale: 0.6).combined(with: .opacity))
 
         case .down:

@@ -10,6 +10,9 @@ struct ContentView: View {
             ScrollView {
                 VStack(spacing: 14) {
                     TableView(model: model)
+                    if model.engine.stage == .done, let result = model.engine.lastResult {
+                        ResultBannerView(result: result)
+                    }
                     if let advice = model.advice, model.isHeroTurn {
                         AdviceCardView(advice: advice)
                     }
