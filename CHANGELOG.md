@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- App icon: fanned A♠/K♥ on felt green, with layered source files in
+  `design/icon/` for Icon Composer (Liquid Glass) workflows. This was the
+  last asset blocking TestFlight uploads.
+
 ## [1.1.2] - 2026-06-11
 
 ### Fixed
