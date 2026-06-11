@@ -22,6 +22,7 @@ targets:
         MARKETING_VERSION: "1.2.2"
         CURRENT_PROJECT_VERSION: "7"
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_VERSION: "5.9"
