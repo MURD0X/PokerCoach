@@ -253,8 +253,13 @@ final class GameFlowTests: XCTestCase {
             }
             return .checkCall
         }
-        await engine.playHand()
-        XCTAssertEqual(engine.stage, .done)
+        // The hero isn't guaranteed a turn in any single hand — opponents can
+        // all fold before the action arrives. Deal until the hero has acted.
+        for _ in 0..<20 where !raised {
+            await engine.playHand()
+            XCTAssertEqual(engine.stage, .done)
+        }
+        XCTAssertTrue(raised, "hero never got to act in 20 hands")
         XCTAssertTrue(engine.log.contains { $0.text.contains("You") && ($0.text.contains("raises") || $0.text.contains("bets")) })
     }
 }
