@@ -1,23 +1,48 @@
 import SwiftUI
 import PokerEngine
 
-struct LogView: View {
+// Full hand history on demand: lives behind a toolbar button so the main
+// screen stays fixed-height. Scrolls, and opens at the latest entry.
+struct LogSheetView: View {
     @ObservedObject var model: GameViewModel
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Text("HAND LOG")
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
-            ForEach(model.engine.log.suffix(9)) { entry in
-                Text(entry.text)
-                    .font(.system(.caption, design: .rounded, weight: weight(entry.kind)))
-                    .foregroundStyle(color(entry.kind))
+        NavigationStack {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 6) {
+                        if model.engine.log.isEmpty {
+                            Text("Nothing yet — deal a hand to start the history.")
+                                .font(.system(.footnote, design: .rounded))
+                                .foregroundStyle(.secondary)
+                        }
+                        ForEach(model.engine.log) { entry in
+                            Text(entry.text)
+                                .font(.system(.footnote, design: .rounded, weight: weight(entry.kind)))
+                                .foregroundStyle(color(entry.kind))
+                                .fixedSize(horizontal: false, vertical: true)
+                                .id(entry.id)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(20)
+                }
+                .onAppear {
+                    if let last = model.engine.log.last {
+                        proxy.scrollTo(last.id, anchor: .bottom)
+                    }
+                }
+            }
+            .navigationTitle("Hand log")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(RoundedRectangle(cornerRadius: 20).fill(Color(.secondarySystemGroupedBackground)))
+        .presentationDetents([.medium, .large])
     }
 
     private func color(_ kind: LogKind) -> Color {

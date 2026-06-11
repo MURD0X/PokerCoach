@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- Hand results and the hand log can no longer overflow the screen. The result
+  is a one-line tappable strip above the Deal button (full recap — every
+  shown hand, the beats-comparison, and the win-%-by-street chart — opens in
+  a scrollable Details sheet). The hand log moved to a toolbar button that
+  opens the full scrollable history. The main screen is now entirely
+  fixed-height in every game state.
+
 ## [1.2.1] - 2026-06-11
 
 ### Fixed
