@@ -166,6 +166,64 @@ final class SidePotTests: XCTestCase {
     }
 }
 
+final class HandResultTests: XCTestCase {
+    func testComparisonLine() {
+        let flush = HandEvaluator.evaluate5([c(14, .clubs), c(11, .clubs), c(8, .clubs), c(6, .clubs), c(2, .clubs)])
+        let twoPair = HandEvaluator.evaluate5([c(13, .spades), c(13, .diamonds), c(9, .clubs), c(9, .hearts), c(12, .spades)])
+        XCTAssertEqual(
+            HandResult.comparisonLine(winnerScore: flush, loserScore: twoPair),
+            "Ace-high Flush beats Two Pair, Kings and Nines"
+        )
+    }
+}
+
+@MainActor
+final class HandResultIntegrationTests: XCTestCase {
+    // Every completed hand must produce a coherent result: a headline, winners,
+    // amounts that account for the whole pot, and 5 highlightable cards per
+    // showdown participant.
+    func testEveryHandProducesCoherentResult() async {
+        let engine = GameEngine()
+        engine.aiDelay = .zero
+        engine.heroActionProvider = { .checkCall }
+        var sawShowdown = false
+
+        for _ in 0..<40 {
+            await engine.playHand()
+            guard let result = engine.lastResult else {
+                return XCTFail("hand #\(engine.handNumber) finished without a result")
+            }
+            XCTAssertFalse(result.headline.isEmpty)
+            XCTAssertFalse(result.winnerNames.isEmpty)
+            XCTAssertGreaterThan(result.potTotal, 0)
+
+            if result.wonByFolds {
+                XCTAssertEqual(result.winnerNames.count, 1)
+                XCTAssertNil(result.explanation)
+                XCTAssertTrue(result.headline.contains("folded"))
+            } else {
+                sawShowdown = true
+                let totalAwarded = result.showdowns.reduce(0) { $0 + $1.amountWon }
+                XCTAssertEqual(totalAwarded, result.potTotal, "awarded chips must equal the pot")
+                for show in result.showdowns {
+                    XCTAssertEqual(show.bestFive.count, 5)
+                    XCTAssertEqual(show.hole.count, 2)
+                    XCTAssertFalse(show.handName.isEmpty)
+                }
+                XCTAssertFalse(result.winningCards.isEmpty)
+                // A non-tied loser means the result teaches the comparison.
+                let winners = result.showdowns.filter(\.isWinner)
+                let losers = result.showdowns.filter { !$0.isWinner }
+                if let bestLoser = losers.max(by: { $0.score < $1.score }),
+                   bestLoser.score < winners[0].score {
+                    XCTAssertEqual(result.explanation?.contains("beats"), true)
+                }
+            }
+        }
+        XCTAssertTrue(sawShowdown, "40 check/call hands should reach at least one showdown")
+    }
+}
+
 @MainActor
 final class GameFlowTests: XCTestCase {
     func testFullHandsConserveChips() async {
