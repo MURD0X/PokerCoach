@@ -6,14 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-10
+
 ### Added
 - Engineering standards: CI (engine tests + app build on every PR), PR
   template requiring test results, issue templates, CODEOWNERS, contribution
   guide, architecture and release documentation.
-
-## [1.0.0] - 2026-06-10
-
-### Added
 - 4-handed no-limit Texas Hold'em against three AI opponents with blinds,
   burn cards, min-raise enforcement, all-ins, side pots, and split pots.
 - Cryptographically fair dealing: Fisher–Yates shuffle backed by the OS
