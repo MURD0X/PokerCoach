@@ -40,5 +40,24 @@ the release tag.
 5. In App Store Connect → TestFlight, add internal testers (instant) or an
    external group (first build needs a brief Beta App Review).
 
-Upload requirements: an app icon in the asset catalog and export-compliance
-answers (PokerCoach uses no non-exempt encryption).
+Upload requirements are already in place: the app icon ships in the asset
+catalog, and `ITSAppUsesNonExemptEncryption: NO` answers export compliance
+automatically.
+
+### CLI upload (after Xcode is signed in and the ASC record exists)
+
+```sh
+xcodebuild -project PokerCoach.xcodeproj -scheme PokerCoach \
+  -destination 'generic/platform=iOS' \
+  -archivePath build/PokerCoach.xcarchive \
+  -allowProvisioningUpdates archive
+xcodebuild -exportArchive \
+  -archivePath build/PokerCoach.xcarchive \
+  -exportOptionsPlist scripts/export-options.plist \
+  -allowProvisioningUpdates \
+  -exportPath build/export
+```
+
+`scripts/export-options.plist` uses `method: app-store-connect` with
+`destination: upload`, so the export step uploads straight to TestFlight
+using the Xcode account session.
