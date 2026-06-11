@@ -5,19 +5,15 @@ struct ContentView: View {
     @StateObject private var model = GameViewModel()
     @State private var showLessons = false
     @State private var showWhy = false
+    @State private var showResultDetails = false
+    @State private var showLog = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 14) {
                     TableView(model: model)
-                    if model.engine.stage == .done, let result = model.engine.lastResult {
-                        ResultBannerView(result: result, equityHistory: model.equityHistory)
-                    }
                     StatsDashboardView(model: model)
-                    if !model.engine.log.isEmpty {
-                        LogView(model: model)
-                    }
                 }
                 .padding(.horizontal, 14)
                 .padding(.top, 6)
@@ -35,6 +31,13 @@ struct ContentView: View {
                     }
                     .disabled(model.isHandRunning)
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showLog = true
+                    } label: {
+                        Label("Hand Log", systemImage: "list.bullet.rectangle")
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showLessons = true
@@ -47,6 +50,8 @@ struct ContentView: View {
                 VStack(spacing: 0) {
                     if let advice = model.advice, model.isHeroTurn {
                         CoachBarView(model: model, advice: advice, showWhy: $showWhy)
+                    } else if model.engine.stage == .done, let result = model.engine.lastResult {
+                        ResultStripView(result: result) { showResultDetails = true }
                     }
                     ControlsView(model: model)
                 }
@@ -60,9 +65,24 @@ struct ContentView: View {
                     CoachWhySheet(advice: advice)
                 }
             }
+            .sheet(isPresented: $showResultDetails) {
+                if let result = model.engine.lastResult {
+                    ResultDetailSheet(result: result, equityHistory: model.equityHistory)
+                }
+            }
+            .sheet(isPresented: $showLog) {
+                LogSheetView(model: model)
+            }
             .onAppear {
-                if ProcessInfo.processInfo.arguments.contains("-autodeal") {
-                    model.dealHand()
+                let args = ProcessInfo.processInfo.arguments
+                if args.contains("-autodeal") { model.dealHand() }
+                if args.contains("-showlog") { showLog = true }
+            }
+            .onChange(of: model.engine.stage) {
+                // Debug-only: auto-open the recap sheet for UI verification.
+                if model.engine.stage == .done, model.engine.lastResult != nil,
+                   ProcessInfo.processInfo.arguments.contains("-autosheets") {
+                    showResultDetails = true
                 }
             }
         }

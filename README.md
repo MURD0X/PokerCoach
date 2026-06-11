@@ -94,6 +94,8 @@ construction, and 25 end-to-end simulated hands asserting chip conservation.
 |---|---|
 | `-autodeal` | Deals the first hand automatically on launch |
 | `-autopilot` | Hero auto-plays (check/call) after a 3 s pause — used for UI verification |
+| `-autosheets` | Auto-opens the hand-result recap sheet at hand end (UI verification) |
+| `-showlog` | Opens the hand-log sheet on launch (UI verification) |
 
 ## Distribution
 
