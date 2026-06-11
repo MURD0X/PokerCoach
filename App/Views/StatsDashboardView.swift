@@ -161,34 +161,3 @@ struct StatsDashboardView: View {
         return .red
     }
 }
-
-struct AdviceCardView: View {
-    let advice: CoachAdvice
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Coach says: \(advice.action.rawValue)", systemImage: "graduationcap.fill")
-                .font(.system(.subheadline, design: .rounded, weight: .bold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Capsule().fill(badgeColor))
-            ForEach(advice.lines, id: \.self) { line in
-                Text(line)
-                    .font(.system(.footnote, design: .rounded))
-                    .foregroundStyle(.primary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(RoundedRectangle(cornerRadius: 20).fill(Color(.secondarySystemGroupedBackground)))
-    }
-
-    private var badgeColor: Color {
-        switch advice.action {
-        case .fold: return .red
-        case .check, .call: return .blue
-        case .bet, .raise: return .green
-        }
-    }
-}

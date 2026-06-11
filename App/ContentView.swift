@@ -4,6 +4,7 @@ import PokerEngine
 struct ContentView: View {
     @StateObject private var model = GameViewModel()
     @State private var showLessons = false
+    @State private var showWhy = false
 
     var body: some View {
         NavigationStack {
@@ -12,9 +13,6 @@ struct ContentView: View {
                     TableView(model: model)
                     if model.engine.stage == .done, let result = model.engine.lastResult {
                         ResultBannerView(result: result, equityHistory: model.equityHistory)
-                    }
-                    if let advice = model.advice, model.isHeroTurn {
-                        AdviceCardView(advice: advice)
                     }
                     StatsDashboardView(model: model)
                     if !model.engine.log.isEmpty {
@@ -46,10 +44,21 @@ struct ContentView: View {
                 }
             }
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                ControlsView(model: model)
+                VStack(spacing: 0) {
+                    if let advice = model.advice, model.isHeroTurn {
+                        CoachBarView(model: model, advice: advice, showWhy: $showWhy)
+                    }
+                    ControlsView(model: model)
+                }
+                .background(.bar)
             }
             .sheet(isPresented: $showLessons) {
                 LessonsView()
+            }
+            .sheet(isPresented: $showWhy) {
+                if let advice = model.advice {
+                    CoachWhySheet(advice: advice)
+                }
             }
             .onAppear {
                 if ProcessInfo.processInfo.arguments.contains("-autodeal") {

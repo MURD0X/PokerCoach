@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- Coach advice no longer overflows: the recommendation is now a one-line bar
+  pinned above the action buttons (badge + made hand + win % + required %),
+  always fully visible at decision time. The full written reasoning opens in
+  a scrollable "Why?" sheet. The whole decision view — table, stats, coach,
+  controls — now fits a single screen.
+
 ## [1.2.0] - 2026-06-11
 
 ### Added
