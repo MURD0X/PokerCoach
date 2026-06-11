@@ -59,9 +59,9 @@ public struct StyleReveal: Sendable {
 /// `onChange`, requests the hero's decision via `heroActionProvider`.
 @MainActor
 public final class GameEngine {
-    public static let smallBlind = 10
-    public static let bigBlind = 20
-    public static let startingStack = 1000
+    public nonisolated static let smallBlind = 10
+    public nonisolated static let bigBlind = 20
+    public nonisolated static let startingStack = 1000
 
     public private(set) var players: [Player]
     public private(set) var board: [Card] = []
