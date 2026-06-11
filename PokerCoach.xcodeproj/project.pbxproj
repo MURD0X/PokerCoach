@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0E2A559C0125DFFBD04B5806 /* PokerEngine in Frameworks */ = {isa = PBXBuildFile; productRef = D04CA99D8EFE986F13E6B625 /* PokerEngine */; };
 		2A32EC575482D191316C96FC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C52D30E015B07FB67CA71085 /* ContentView.swift */; };
+		33CD6208C1695E960FE8DE0F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E38AE295DC15C37837561C64 /* Assets.xcassets */; };
 		41F3768EE2AE2395A5F54BF6 /* ResultBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */; };
 		5CFE0B3C27D2112EC556BBD8 /* StatsDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2163486976D59A63CEEFC6A0 /* StatsDashboardView.swift */; };
 		683DA86231180A71954CCE87 /* PokerCoachApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6EADD7BE62F6A280838F0E /* PokerCoachApp.swift */; };
@@ -31,6 +32,7 @@
 		B2E2DC9BFC0C3C0EAAE479B2 /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
 		C52D30E015B07FB67CA71085 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CE6EADD7BE62F6A280838F0E /* PokerCoachApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PokerCoachApp.swift; sourceTree = "<group>"; };
+		E38AE295DC15C37837561C64 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EB725B35DC806F8FF4C84F0A /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
 		EDE9E759B832FE5194B4C3D7 /* PokerEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = PokerEngine; path = PokerEngine; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -73,6 +75,7 @@
 		66211CA6E29182D4C72EE969 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				E38AE295DC15C37837561C64 /* Assets.xcassets */,
 				C52D30E015B07FB67CA71085 /* ContentView.swift */,
 				EB725B35DC806F8FF4C84F0A /* GameViewModel.swift */,
 				CE6EADD7BE62F6A280838F0E /* PokerCoachApp.swift */,
@@ -105,6 +108,7 @@
 			buildConfigurationList = F900D42B7B6CAE4A7AF946E5 /* Build configuration list for PBXNativeTarget "PokerCoach" */;
 			buildPhases = (
 				7DDC84825C3353957FF4095F /* Sources */,
+				595E82B9B659854C1A87CD9E /* Resources */,
 				63FF6BE9859E9132358A3157 /* Frameworks */,
 			);
 			buildRules = (
@@ -154,6 +158,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		595E82B9B659854C1A87CD9E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				33CD6208C1695E960FE8DE0F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		7DDC84825C3353957FF4095F /* Sources */ = {
