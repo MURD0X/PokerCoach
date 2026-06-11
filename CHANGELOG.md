@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-11
+
 ### Added
 - Opponent personalities: every opponent is rolled on three axes — Tight/Loose
   (starting-hand selection), Passive/Aggressive (betting pressure), and
@@ -49,5 +51,6 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/MURD0X/PokerCoach/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MURD0X/PokerCoach/releases/tag/v1.0.0
