@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-06-11
+
 ### Fixed
 - Hand results and the hand log can no longer overflow the screen. The result
   is a one-line tappable strip above the Deal button (full recap — every
@@ -89,7 +91,8 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/MURD0X/PokerCoach/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/MURD0X/PokerCoach/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/MURD0X/PokerCoach/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/MURD0X/PokerCoach/compare/v1.1.1...v1.1.2
