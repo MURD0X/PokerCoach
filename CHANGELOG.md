@@ -7,6 +7,17 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Opponent personalities: every opponent is rolled on three axes — Tight/Loose
+  (starting-hand selection), Passive/Aggressive (betting pressure), and
+  Rookie/Solid/Expert (pot-odds discipline and judgment) — and plays
+  accordingly, including aggression-scaled bet sizing and skill-scaled
+  misjudgments.
+- Hidden style reveal: traits show as "? · ? · ?" and unlock with evidence —
+  tightness after 8 hands observed, aggression after 10 decisions, skill
+  after 3 showdowns — teaching real opponent profiling.
+- Random tables: each session seats 3 random opponents (from a pool of 20
+  names) with fresh personality rolls; a New Table button re-rolls the
+  opposition at any time between hands.
 - Hand results are now explicit: a result banner shows who won, how much,
   and with what hand; the five winning cards glow on the table; and a
   per-player recap explains why the winner beats the best losing hand
