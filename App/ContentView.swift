@@ -29,6 +29,14 @@ struct ContentView: View {
             .navigationTitle("Poker Coach")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        model.newTable()
+                    } label: {
+                        Label("New Table", systemImage: "dice.fill")
+                    }
+                    .disabled(model.isHandRunning)
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showLessons = true

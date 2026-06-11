@@ -152,6 +152,15 @@ final class GameViewModel: ObservableObject {
         }
     }
 
+    func newTable() {
+        guard !isHandRunning else { return }
+        engine.newTable()
+        stats = nil
+        advice = nil
+        equityHistory = []
+        lastStatsKey = ""
+    }
+
     // MARK: - Bet sizing for the controls
 
     var heroToCall: Int { engine.heroToCall }

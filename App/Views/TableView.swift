@@ -26,7 +26,8 @@ struct TableView: View {
                         isActing: engine.actingIndex == player.id,
                         showCards: revealAll && !player.folded,
                         cardWidth: 32,
-                        winningCards: winningCards
+                        winningCards: winningCards,
+                        reveal: engine.styleReveal(for: player.id)
                     )
                 }
             }
@@ -89,10 +90,23 @@ struct SeatView: View {
     let showCards: Bool
     let cardWidth: CGFloat
     var winningCards: Set<Card> = []
+    var reveal: StyleReveal? = nil
+
+    private var avatarColor: Color {
+        let hue = Double(abs(player.name.hashValue % 360)) / 360
+        return Color(hue: hue, saturation: 0.55, brightness: 0.75)
+    }
 
     var body: some View {
         VStack(spacing: 5) {
             HStack(spacing: 4) {
+                if !player.isHero {
+                    Text(String(player.name.prefix(1)))
+                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .frame(width: 15, height: 15)
+                        .background(Circle().fill(avatarColor))
+                }
                 Text(player.name)
                     .font(.system(.footnote, design: .rounded, weight: .semibold))
                     .foregroundStyle(.white)
@@ -107,6 +121,14 @@ struct SeatView: View {
             Text("\(player.stack)")
                 .font(.system(.caption2, design: .rounded, weight: .medium))
                 .foregroundStyle(.white.opacity(0.75))
+
+            if let reveal {
+                Text(reveal.summary)
+                    .font(.system(size: 8.5, weight: .semibold, design: .rounded))
+                    .foregroundStyle(reveal.anythingKnown ? Color(red: 0.62, green: 0.89, blue: 0.75) : .white.opacity(0.45))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
 
             if player.hole.count == 2 {
                 HStack(spacing: 4) {

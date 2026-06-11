@@ -25,6 +25,7 @@ public struct Player: Identifiable, Sendable {
     public let name: String
     public let isHero: Bool
     public var stack: Int
+    public var personality: Personality? = nil
     public var hole: [Card] = []
     public var folded = false
     public var allIn = false
@@ -32,6 +33,26 @@ public struct Player: Identifiable, Sendable {
     public var totalBet = 0
     public var hasActed = false
     public var lastAction = ""
+    // Observation counters that drive the gradual style reveal.
+    public var handsSeen = 0
+    public var observedActions = 0
+    public var showdownsShown = 0
+}
+
+/// What the player has learned about an opponent so far. Traits stay hidden
+/// (nil) until enough evidence accumulates, like building a read at a real
+/// table.
+public struct StyleReveal: Sendable {
+    public let tightness: String?
+    public let aggression: String?
+    public let skill: String?
+
+    public var summary: String {
+        [tightness, aggression, skill].map { $0 ?? "?" }.joined(separator: " · ")
+    }
+    public var anythingKnown: Bool {
+        tightness != nil || aggression != nil || skill != nil
+    }
 }
 
 /// Four-handed no-limit Texas Hold'em. UI-agnostic: publishes changes via
@@ -62,13 +83,52 @@ public final class GameEngine {
     private var deck: [Card] = []
     private var logCounter = 0
 
-    public init(opponentNames: [String] = ["Maya", "Dmitri", "Rosa"]) {
+    public init(opponents: [(name: String, personality: Personality)] = OpponentFactory.randomLineup(count: 3)) {
+        players = GameEngine.lineup(opponents: opponents)
+        dealerIndex = Int.random(in: 0..<players.count)
+    }
+
+    private nonisolated static func lineup(opponents: [(name: String, personality: Personality)]) -> [Player] {
         var all = [Player(id: 0, name: "You", isHero: true, stack: GameEngine.startingStack)]
-        for (i, name) in opponentNames.enumerated() {
-            all.append(Player(id: i + 1, name: name, isHero: false, stack: GameEngine.startingStack))
+        for (i, opp) in opponents.enumerated() {
+            var p = Player(id: i + 1, name: opp.name, isHero: false, stack: GameEngine.startingStack)
+            p.personality = opp.personality
+            all.append(p)
         }
-        players = all
-        dealerIndex = Int.random(in: 0..<all.count)
+        return all
+    }
+
+    /// Replace the opposition with fresh random players and reset the table.
+    /// No-op while a hand is in progress.
+    public func newTable(opponents: [(name: String, personality: Personality)] = OpponentFactory.randomLineup(count: 3)) {
+        guard stage == .idle || stage == .done else { return }
+        players = GameEngine.lineup(opponents: opponents)
+        dealerIndex = Int.random(in: 0..<players.count)
+        board = []
+        stage = .idle
+        currentBet = 0
+        minRaise = GameEngine.bigBlind
+        handNumber = 0
+        log = []
+        logCounter = 0
+        actingIndex = nil
+        lastResult = nil
+        emit("A new table — three unfamiliar opponents sit down. Watch how they play.", .info)
+        notify()
+    }
+
+    /// Style traits revealed so far for an opponent, based on hands observed
+    /// (tight/loose), decisions seen (passive/aggressive), and showdowns
+    /// where their cards were exposed (skill).
+    public func styleReveal(for id: Int) -> StyleReveal {
+        guard id != 0, let p = players.first(where: { $0.id == id }), let pers = p.personality else {
+            return StyleReveal(tightness: nil, aggression: nil, skill: nil)
+        }
+        return StyleReveal(
+            tightness: p.handsSeen >= 8 ? pers.tightnessLabel : nil,
+            aggression: p.observedActions >= 10 ? pers.aggressionLabel : nil,
+            skill: p.showdownsShown >= 3 ? pers.skillLabel : nil
+        )
     }
 
     public var hero: Player { players[0] }
@@ -112,6 +172,7 @@ public final class GameEngine {
             players[i].totalBet = 0
             players[i].hasActed = false
             players[i].lastAction = ""
+            players[i].handsSeen += 1
         }
 
         dealerIndex = (dealerIndex + 1) % players.count
@@ -212,43 +273,54 @@ public final class GameEngine {
         return true
     }
 
-    private func aiDecision(for index: Int) -> HeroAction {
+    func aiDecision(for index: Int) -> HeroAction {
         let p = players[index]
+        let pers = p.personality ?? .balanced
         let toCall = currentBet - p.betThisRound
         let opponents = players.filter { $0.id != p.id && !$0.folded }.count
         let pot = totalPot
+        func chance(_ rate: Double) -> Bool { Double.random(in: 0..<1) < rate }
+        // Raise sizing scales with aggression: half-pot for the meekest, ~1.3x pot for maniacs.
+        func raiseSized() -> HeroAction {
+            let size = max(minRaise, Int(Double(pot) * (0.5 + pers.aggression * 0.8)))
+            return .raise(to: min(currentBet + size, p.betThisRound + p.stack))
+        }
 
         if stage == .preflop {
-            let score = Chen.score(p.hole)
-            let loose = Int.random(in: 0..<100) < 12 // occasional speculative play
-            if score >= 10 || (score >= 8 && toCall <= GameEngine.bigBlind) {
+            let score = Double(Chen.score(p.hole))
+            if score >= pers.preflopRaiseThreshold {
                 if toCall > p.stack / 3 && score < 12 { return .checkCall }
-                return .raise(to: min(currentBet + max(minRaise, pot), p.betThisRound + p.stack))
+                return chance(pers.raiseWithStrengthRate) || toCall == 0 ? raiseSized() : .checkCall
             }
-            if score >= 6 && toCall <= 3 * GameEngine.bigBlind { return .checkCall }
-            if loose && toCall <= 2 * GameEngine.bigBlind { return .checkCall }
+            if score >= pers.preflopCallThreshold && toCall <= 3 * GameEngine.bigBlind {
+                return .checkCall
+            }
+            if chance(pers.speculativeCallRate) && toCall <= 2 * GameEngine.bigBlind { return .checkCall }
             return toCall == 0 ? .checkCall : .fold
         }
 
-        let equity = Equity.estimate(hole: p.hole, board: board, opponents: opponents, trials: 150).decisionEquity
-        let potOdds = toCall > 0 ? Double(toCall) / Double(pot + toCall) : 0
-        let bluff = Int.random(in: 0..<100) < 8
+        // Skill shapes how accurately they judge their own hand.
+        var equity = Equity.estimate(hole: p.hole, board: board, opponents: opponents, trials: pers.equityTrials).decisionEquity
+        equity = min(1, max(0, equity + Double.random(in: -1...1) * pers.equityNoise))
+
         if toCall == 0 {
-            if equity > 0.62 || bluff {
-                return .raise(to: max(minRaise, pot / 2))
-            }
+            if equity > pers.valueBetThreshold || chance(pers.bluffRate) { return raiseSized() }
             return .checkCall
         }
+        let potOdds = Double(toCall) / Double(pot + toCall)
         if equity > potOdds + 0.25 && equity > 0.55 {
-            return .raise(to: min(currentBet + max(minRaise, pot), p.betThisRound + p.stack))
+            return chance(pers.raiseWithStrengthRate) ? raiseSized() : .checkCall
         }
-        if equity > potOdds || (bluff && toCall < p.stack / 8) { return .checkCall }
+        // Unskilled players discount the price they're being asked to pay.
+        if equity > potOdds * pers.potOddsDiscipline { return .checkCall }
+        if chance(pers.bluffRate) && toCall < p.stack / 8 { return .checkCall }
         return .fold
     }
 
     private func apply(_ action: HeroAction, to index: Int) {
         let toCall = currentBet - players[index].betThisRound
         players[index].hasActed = true
+        if !players[index].isHero { players[index].observedActions += 1 }
         let name = players[index].name
 
         switch action {
@@ -322,9 +394,10 @@ public final class GameEngine {
     private func showdown() {
         stage = .showdown
         emit("Showdown!", .street)
-        for p in players where !p.folded {
-            let score = HandEvaluator.bestScore(p.hole + board)
-            emit("\(p.name) shows \(p.hole.map(\.text).joined(separator: " ")) — \(HandEvaluator.name(of: score)).")
+        for i in players.indices where !players[i].folded {
+            let score = HandEvaluator.bestScore(players[i].hole + board)
+            emit("\(players[i].name) shows \(players[i].hole.map(\.text).joined(separator: " ")) — \(HandEvaluator.name(of: score)).")
+            if !players[i].isHero { players[i].showdownsShown += 1 }
         }
         let potTotal = totalPot
         let pots = GameEngine.buildPots(contributions: players.map { ($0.totalBet, $0.folded, $0.id) })
