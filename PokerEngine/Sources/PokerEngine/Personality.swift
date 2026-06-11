@@ -71,11 +71,19 @@ public enum OpponentFactory {
     static let names = [
         "Maya", "Dmitri", "Rosa", "Felix", "Anika", "Jorge", "Wei", "Sasha",
         "Priya", "Marco", "Yuki", "Omar", "Elena", "Kofi", "Astrid", "Theo",
-        "Ines", "Ravi", "Greta", "Nico",
+        "Ines", "Ravi", "Greta", "Nico", "Aisha", "Bruno", "Carmen", "Dara",
+        "Emeka", "Freya", "Goran", "Hana", "Idris", "Jules", "Kira", "Luca",
+        "Mei", "Nadia", "Oscar", "Paulo", "Quinn", "Rina", "Stefan", "Tara",
+        "Umar", "Vera", "Wren", "Ximena", "Yara", "Zane", "Bea", "Cyrus",
+        "Dalia", "Enzo", "Farah", "Gus", "Hilde", "Ivo", "Jana", "Kenji",
+        "Lola", "Milos", "Noor", "Petra",
     ]
 
-    public static func randomLineup(count: Int) -> [(name: String, personality: Personality)] {
+    /// Draw `count` distinct opponents, never reusing a name in `excluding` —
+    /// so a re-rolled table always feels like new players sat down.
+    public static func randomLineup(count: Int, excluding: Set<String> = []) -> [(name: String, personality: Personality)] {
         var rng = SystemRandomNumberGenerator()
-        return Array(names.shuffled(using: &rng).prefix(count)).map { ($0, Personality.random()) }
+        let pool = names.filter { !excluding.contains($0) }
+        return Array(pool.shuffled(using: &rng).prefix(count)).map { ($0, Personality.random()) }
     }
 }

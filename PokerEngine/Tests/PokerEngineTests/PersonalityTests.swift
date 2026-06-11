@@ -47,6 +47,21 @@ final class PersonalityTests: XCTestCase {
             XCTAssertEqual(Set(lineup.map(\.name)).count, 3)
         }
     }
+
+    func testRandomLineupRespectsExclusions() {
+        let excluded: Set<String> = ["Maya", "Dmitri", "Rosa", "Omar", "Wei"]
+        for _ in 0..<100 {
+            let lineup = OpponentFactory.randomLineup(count: 3, excluding: excluded)
+            XCTAssertTrue(lineup.allSatisfy { !excluded.contains($0.name) })
+        }
+    }
+
+    func testLineupsVaryAcrossSessions() {
+        // 10 independent lineups (as if 10 app launches) should not all be
+        // identical. With 60 names the chance of a false failure is ~0.
+        let lineups = (0..<10).map { _ in OpponentFactory.randomLineup(count: 3).map(\.name) }
+        XCTAssertGreaterThan(Set(lineups).count, 1, "every session produced the same table")
+    }
 }
 
 @MainActor
@@ -113,6 +128,11 @@ final class PersonalityBehaviorTests: XCTestCase {
         engine.heroActionProvider = { .checkCall }
         for _ in 0..<3 { await engine.playHand() }
         XCTAssertEqual(engine.handNumber, 3)
+
+        let oldNames = Set(engine.players.dropFirst().map(\.name))
+        engine.newTable()
+        let rerolled = Set(engine.players.dropFirst().map(\.name))
+        XCTAssertTrue(rerolled.isDisjoint(with: oldNames), "re-rolled table repeated a current opponent")
 
         engine.newTable(opponents: [
             ("Newcomer", .balanced), ("Fresh", .balanced), ("Unknown", .balanced),

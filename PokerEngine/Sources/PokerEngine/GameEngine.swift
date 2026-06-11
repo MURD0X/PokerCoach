@@ -99,10 +99,13 @@ public final class GameEngine {
     }
 
     /// Replace the opposition with fresh random players and reset the table.
-    /// No-op while a hand is in progress.
-    public func newTable(opponents: [(name: String, personality: Personality)] = OpponentFactory.randomLineup(count: 3)) {
+    /// Random re-rolls never repeat a current opponent's name, so the new
+    /// table is visibly different. No-op while a hand is in progress.
+    public func newTable(opponents: [(name: String, personality: Personality)]? = nil) {
         guard stage == .idle || stage == .done else { return }
-        players = GameEngine.lineup(opponents: opponents)
+        let currentNames = Set(players.dropFirst().map(\.name))
+        let next = opponents ?? OpponentFactory.randomLineup(count: 3, excluding: currentNames)
+        players = GameEngine.lineup(opponents: next)
         dealerIndex = Int.random(in: 0..<players.count)
         board = []
         stage = .idle
