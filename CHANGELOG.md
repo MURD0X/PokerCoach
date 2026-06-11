@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-06-11
+
 ### Fixed
 - Stats dashboard no longer overflows: outs collapse to a single row with
   "+N more" (tap to expand inline), and the win-%-by-street chart moved to
@@ -63,7 +65,8 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/MURD0X/PokerCoach/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/MURD0X/PokerCoach/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/MURD0X/PokerCoach/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MURD0X/PokerCoach/releases/tag/v1.0.0
