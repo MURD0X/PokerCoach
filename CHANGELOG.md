@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-11
+
 ### Added
 - App icon: fanned A♠/K♥ on felt green, with layered source files in
   `design/icon/` for Icon Composer (Liquid Glass) workflows. This was the
@@ -70,7 +72,8 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/MURD0X/PokerCoach/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/MURD0X/PokerCoach/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/MURD0X/PokerCoach/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/MURD0X/PokerCoach/compare/v1.0.0...v1.1.0
