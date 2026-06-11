@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- Stats dashboard no longer overflows: outs collapse to a single row with
+  "+N more" (tap to expand inline), and the win-%-by-street chart moved to
+  the hand-end result card where it reads as a post-mortem. Every dashboard
+  row now has a bounded height.
+
 ## [1.1.1] - 2026-06-11
 
 ### Changed

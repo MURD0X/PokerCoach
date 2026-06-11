@@ -1,8 +1,10 @@
 import SwiftUI
+import Charts
 import PokerEngine
 
 struct ResultBannerView: View {
     let result: HandResult
+    var equityHistory: [StreetEquity] = []
 
     private var heroWon: Bool { result.winnerNames.contains("You") }
 
@@ -51,9 +53,40 @@ struct ResultBannerView: View {
                     }
                 }
             }
+
+            if equityHistory.count >= 2 {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("YOUR WIN % BY STREET")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Chart(equityHistory) { entry in
+                        BarMark(
+                            x: .value("Street", entry.street),
+                            y: .value("Win %", entry.value * 100)
+                        )
+                        .foregroundStyle(barColor(entry.value).gradient)
+                        .cornerRadius(4)
+                        .annotation(position: .overlay) {
+                            Text("\(Int((entry.value * 100).rounded()))")
+                                .font(.system(size: 9, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                        }
+                    }
+                    .chartXScale(domain: ["Pre", "Flop", "Turn", "River"])
+                    .chartYScale(domain: 0...100)
+                    .chartYAxis { AxisMarks(values: [0, 50, 100]) }
+                    .frame(height: 90)
+                }
+            }
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 20).fill(Color(.secondarySystemGroupedBackground)))
         .transition(.move(edge: .top).combined(with: .opacity))
+    }
+
+    private func barColor(_ value: Double) -> Color {
+        if value >= 0.6 { return .green }
+        if value >= 0.4 { return .orange }
+        return .red
     }
 }
