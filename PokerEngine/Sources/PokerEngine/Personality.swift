@@ -4,7 +4,7 @@ import Foundation
 /// - `tightness`: 0 = plays almost anything, 1 = waits for premium hands
 /// - `aggression`: 0 = checks and calls, 1 = bets and raises relentlessly
 /// - `skill`: 0 = ignores pot odds and misjudges strength, 1 = plays the math
-public struct Personality: Sendable, Equatable {
+public struct Personality: Sendable, Equatable, Codable {
     public let tightness: Double
     public let aggression: Double
     public let skill: Double

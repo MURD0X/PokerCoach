@@ -1,7 +1,7 @@
 import Foundation
 
 /// A table's blind structure. Buy-in is the standard 50 big blinds.
-public struct TableStakes: Sendable, Equatable, Hashable, Identifiable {
+public struct TableStakes: Sendable, Equatable, Hashable, Identifiable, Codable {
     public let smallBlind: Int
     public let bigBlind: Int
 

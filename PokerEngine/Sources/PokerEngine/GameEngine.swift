@@ -136,6 +136,68 @@ public final class GameEngine {
         notify()
     }
 
+    /// Everything needed to put a table back exactly as it was between
+    /// hands: seats (with hidden personalities and the evidence counters
+    /// behind style reveals), stakes, button position, and hand count.
+    public struct TableSnapshot: Codable, Sendable {
+        public struct Seat: Codable, Sendable {
+            public let name: String
+            public let isHero: Bool
+            public let stack: Int
+            public let personality: Personality?
+            public let handsSeen: Int
+            public let observedActions: Int
+            public let showdownsShown: Int
+        }
+
+        public let stakes: TableStakes
+        public let dealerIndex: Int
+        public let handNumber: Int
+        public let seats: [Seat]
+    }
+
+    /// Capture the table between hands. Returns nil mid-hand — a snapshot
+    /// taken then would tear chips out of the pot.
+    public func snapshot() -> TableSnapshot? {
+        guard stage == .idle || stage == .done else { return nil }
+        return TableSnapshot(
+            stakes: stakes,
+            dealerIndex: dealerIndex,
+            handNumber: handNumber,
+            seats: players.map {
+                TableSnapshot.Seat(
+                    name: $0.name, isHero: $0.isHero, stack: $0.stack,
+                    personality: $0.personality, handsSeen: $0.handsSeen,
+                    observedActions: $0.observedActions, showdownsShown: $0.showdownsShown
+                )
+            }
+        )
+    }
+
+    /// Reseat the table exactly as snapshotted (between hands only).
+    public func restore(_ snapshot: TableSnapshot) {
+        guard stage == .idle || stage == .done else { return }
+        stakes = snapshot.stakes
+        dealerIndex = snapshot.dealerIndex
+        handNumber = snapshot.handNumber
+        players = snapshot.seats.enumerated().map { index, seat in
+            var p = Player(id: index, name: seat.name, isHero: seat.isHero, stack: seat.stack)
+            p.personality = seat.personality
+            p.handsSeen = seat.handsSeen
+            p.observedActions = seat.observedActions
+            p.showdownsShown = seat.showdownsShown
+            return p
+        }
+        board = []
+        stage = .idle
+        currentBet = 0
+        minRaise = stakes.bigBlind
+        actingIndex = nil
+        lastResult = nil
+        emit("Back at the table — same seats, same players.", .info)
+        notify()
+    }
+
     /// Style traits revealed so far for an opponent, based on hands observed
     /// (tight/loose), decisions seen (passive/aggressive), and showdowns
     /// where their cards were exposed (skill).
