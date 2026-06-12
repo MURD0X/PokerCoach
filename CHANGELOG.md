@@ -6,7 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-06-12
+
 ### Added
+- Bankroll history: tap the bankroll in the header for the long-term view —
+  a chart of your bankroll after every session, lifetime net and win rate,
+  total hands, average coach adherence, and a ledger of recent sessions
+  with per-session results. Sessions record automatically when you leave a
+  table, bust out, or even if the app is killed mid-game.
 - Table stakes: choose your game — blinds of 5/10, 10/20, or 25/50 with
   50-big-blind buy-ins (500 / 1,000 / 2,500). The table picker shows what
   each seat costs as a percentage of your bankroll, color-coded against the
@@ -174,7 +181,8 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/MURD0X/PokerCoach/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/MURD0X/PokerCoach/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/MURD0X/PokerCoach/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/MURD0X/PokerCoach/compare/v1.3.0...v1.4.0

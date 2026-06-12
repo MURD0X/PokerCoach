@@ -63,6 +63,8 @@ final class GameViewModel: ObservableObject {
     @Published var showBustSheet = false
     @Published var bankroll = BankrollLedger()
     @Published var showRuinSheet = false
+    private var sessionBuyInTotal = 0
+    private var sessionStartDate = Date()
     private var pendingSeat: (() -> Void)?
 
     private enum Keys {
@@ -115,10 +117,22 @@ final class GameViewModel: ObservableObject {
         let d = UserDefaults.standard
         var ledger = BankrollLedger(balance: d.object(forKey: Keys.balance) == nil
             ? BankrollLedger.startingAmount : d.integer(forKey: Keys.balance))
-        ledger.cashOut(d.integer(forKey: Keys.lastTableStack))
+        let previousStack = d.integer(forKey: Keys.lastTableStack)
+        ledger.cashOut(previousStack)
         d.set(0, forKey: Keys.lastTableStack)
         bankroll = ledger
-        chargeForSeat { [weak self] in self?.bumpSessions() }
+        // The interrupted session (if any) becomes a history record now.
+        if let snapshot = SessionSnapshot.load() {
+            SessionHistoryStore.append(SessionRecord(
+                date: snapshot.startDate, bigBlind: snapshot.bigBlind,
+                buyInTotal: snapshot.buyInTotal, cashOut: previousStack,
+                hands: snapshot.hands, decisionsTotal: snapshot.decisionsTotal,
+                decisionsFollowed: snapshot.decisionsFollowed,
+                balanceAfter: ledger.balance
+            ))
+            SessionSnapshot.clear()
+        }
+        chargeForSeat { [weak self] in self?.beginSession() }
     }
 
     private func saveBankroll() {
@@ -139,6 +153,34 @@ final class GameViewModel: ObservableObject {
             engine.hero.stack + engine.hero.totalBet,
             forKey: Keys.lastTableStack
         )
+    }
+
+    private func beginSession() {
+        sessionStartDate = Date()
+        sessionBuyInTotal = engine.stakes.buyIn
+        bumpSessions()
+        snapshotSession()
+    }
+
+    private func snapshotSession() {
+        SessionSnapshot(
+            startDate: sessionStartDate, bigBlind: engine.stakes.bigBlind,
+            buyInTotal: sessionBuyInTotal, hands: session.handsPlayed,
+            decisionsTotal: session.decisionsTotal,
+            decisionsFollowed: session.decisionsFollowed
+        ).save()
+    }
+
+    // Close the current seat into a history record at the cash-out moment.
+    private func closeSession(cashOut: Int) {
+        SessionHistoryStore.append(SessionRecord(
+            date: sessionStartDate, bigBlind: engine.stakes.bigBlind,
+            buyInTotal: sessionBuyInTotal, cashOut: cashOut,
+            hands: session.handsPlayed, decisionsTotal: session.decisionsTotal,
+            decisionsFollowed: session.decisionsFollowed,
+            balanceAfter: bankroll.balance
+        ))
+        SessionSnapshot.clear()
     }
 
     // Pays the buy-in, or raises the ruin sheet and parks the intent until
@@ -175,7 +217,10 @@ final class GameViewModel: ObservableObject {
     func buyBackIn() {
         showBustSheet = false
         chargeForSeat { [weak self] in
-            self?.engine.rebuyHero()
+            guard let self else { return }
+            self.sessionBuyInTotal += self.engine.stakes.buyIn
+            self.engine.rebuyHero()
+            self.snapshotSession()
         }
     }
 
@@ -250,6 +295,7 @@ final class GameViewModel: ObservableObject {
     }
 
     private func recordHandOutcome() {
+        defer { snapshotSession() }
         let d = UserDefaults.standard
         d.set(d.integer(forKey: Keys.hands) + 1, forKey: Keys.hands)
         session.handsPlayed = engine.handNumber
@@ -379,9 +425,11 @@ final class GameViewModel: ObservableObject {
         guard !isHandRunning else { return }
         let target = stakes ?? engine.stakes
         UserDefaults.standard.set(target.bigBlind, forKey: GameViewModel.stakesKey)
-        // Cash out the current seat, then pay for the next one.
-        bankroll.cashOut(engine.hero.stack)
+        // Cash out the current seat, record the session, pay for the next one.
+        let cashOut = engine.hero.stack
+        bankroll.cashOut(cashOut)
         saveBankroll()
+        closeSession(cashOut: cashOut)
         showBustSheet = false
         chargeForSeat(target.buyIn) { [weak self] in
             guard let self else { return }
@@ -391,7 +439,7 @@ final class GameViewModel: ObservableObject {
             self.equityHistory = []
             self.lastStatsKey = ""
             self.session = SessionStats()
-            self.bumpSessions()
+            self.beginSession()
         }
     }
 

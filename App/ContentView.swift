@@ -9,6 +9,7 @@ struct ContentView: View {
     @State private var showLog = false
     @State private var showSettings = false
     @State private var showTablePicker = false
+    @State private var showHistory = false
     @AppStorage(CoachMode.storageKey) private var coachModeRaw = CoachMode.full.rawValue
 
     var body: some View {
@@ -26,13 +27,18 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    VStack(spacing: 0) {
-                        Text("Poker Coach")
-                            .font(.system(.subheadline, design: .rounded, weight: .semibold))
-                        Text("Bankroll \(model.bankroll.balance)")
-                            .font(.system(.caption2, design: .rounded, weight: .medium))
-                            .foregroundStyle(.secondary)
+                    Button {
+                        showHistory = true
+                    } label: {
+                        VStack(spacing: 0) {
+                            Text("Poker Coach")
+                                .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                            Text("Bankroll \(model.bankroll.balance)")
+                                .font(.system(.caption2, design: .rounded, weight: .medium))
+                                .foregroundStyle(.secondary)
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -107,6 +113,9 @@ struct ContentView: View {
                     }
                 )
             }
+            .sheet(isPresented: $showHistory) {
+                HistoryView(records: SessionHistoryStore.load(), currentBalance: model.bankroll.balance)
+            }
             .sheet(isPresented: $showTablePicker) {
                 TablePickerView(
                     bankroll: model.bankroll.balance,
@@ -129,6 +138,25 @@ struct ContentView: View {
                 }
                 if args.contains("-showruin") { model.showRuinSheet = true }
                 if args.contains("-showpicker") { showTablePicker = true }
+                if args.contains("-demohistory") {
+                    if SessionHistoryStore.load().isEmpty {
+                        var balance = 10_000
+                        for i in 0..<9 {
+                            let net = [600, -1000, 250, -500, 1400, -1000, 800, -250, 950][i]
+                            let buyIn = [500, 1000, 1000, 500, 1000, 2500, 1000, 500, 1000][i]
+                            balance += net
+                            SessionHistoryStore.append(SessionRecord(
+                                date: Date().addingTimeInterval(Double(i - 9) * 86_400),
+                                bigBlind: [10, 20, 20, 10, 20, 50, 20, 10, 20][i],
+                                buyInTotal: buyIn,
+                                cashOut: buyIn + net, hands: 12 + i * 3,
+                                decisionsTotal: 20 + i * 4, decisionsFollowed: 14 + i * 3,
+                                balanceAfter: balance
+                            ))
+                        }
+                    }
+                    showHistory = true
+                }
             }
             .onChange(of: model.engine.stage) {
                 // Debug-only: auto-open the recap sheet for UI verification.
