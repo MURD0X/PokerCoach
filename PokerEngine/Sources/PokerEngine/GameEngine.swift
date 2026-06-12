@@ -161,8 +161,19 @@ public final class GameEngine {
     }
 
     /// True when the hero has no chips left — the session is over and the
-    /// engine will refuse to deal until a new table is seated.
+    /// engine will refuse to deal until a new table is seated or the hero
+    /// buys back in.
     public var heroBusted: Bool { players[0].stack == 0 }
+
+    /// Hero buys back in at the same table: same opponents, reads intact.
+    /// Only valid between hands while busted; the app layer charges the
+    /// bankroll before calling.
+    public func rebuyHero() {
+        guard heroBusted, stage == .idle || stage == .done else { return }
+        players[0].stack = GameEngine.startingStack
+        emit("You buy back in for \(GameEngine.startingStack) chips.", .info)
+        notify()
+    }
 
     public func playHand() async {
         guard !heroBusted else { return }
