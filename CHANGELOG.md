@@ -7,6 +7,10 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Settings (gear icon in the toolbar): opponent speed — Fast (current
+  pace), Medium, or Slow — persisted across launches and applied
+  immediately, even mid-hand. Slower speeds make the action easier to
+  follow while learning.
 - Lessons: a "Chen scale" section explaining the preflop point system the
   coach quotes — scoring rules, worked examples (AA=20, AKs=12, 72o=−1),
   and the thresholds behind the coach's preflop advice.

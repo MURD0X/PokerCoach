@@ -7,6 +7,7 @@ struct ContentView: View {
     @State private var showWhy = false
     @State private var showResultDetails = false
     @State private var showLog = false
+    @State private var showSettings = false
 
     var body: some View {
         NavigationStack {
@@ -45,6 +46,13 @@ struct ContentView: View {
                         Label("Lessons", systemImage: "book.fill")
                     }
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Label("Settings", systemImage: "gearshape.fill")
+                    }
+                }
             }
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 VStack(spacing: 0) {
@@ -73,10 +81,14 @@ struct ContentView: View {
             .sheet(isPresented: $showLog) {
                 LogSheetView(model: model)
             }
+            .sheet(isPresented: $showSettings) {
+                SettingsView(model: model)
+            }
             .onAppear {
                 let args = ProcessInfo.processInfo.arguments
                 if args.contains("-autodeal") { model.dealHand() }
                 if args.contains("-showlog") { showLog = true }
+                if args.contains("-showsettings") { showSettings = true }
             }
             .onChange(of: model.engine.stage) {
                 // Debug-only: auto-open the recap sheet for UI verification.

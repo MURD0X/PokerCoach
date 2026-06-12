@@ -19,12 +19,14 @@
 		9B94EE156CC25CC07366164F /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702E372D6D3213428789FDA4 /* LogView.swift */; };
 		9F63F33290544416673A1BDD /* CoachBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A542BBE090D1D1609CFB4A89 /* CoachBarView.swift */; };
 		A3FAD2901E1E1A3465B5F2EA /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E2DC9BFC0C3C0EAAE479B2 /* CardView.swift */; };
+		E36093F6190BFF80521FCB9E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3143C2FF013A634AE63945E0 /* SettingsView.swift */; };
 		E5A9EBC758E9B75BF41FA149 /* LessonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6EC32705BD6CE2CD2951A4 /* LessonsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		180FEF3C6CE85924D840BD60 /* ControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlsView.swift; sourceTree = "<group>"; };
 		2163486976D59A63CEEFC6A0 /* StatsDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsDashboardView.swift; sourceTree = "<group>"; };
+		3143C2FF013A634AE63945E0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3C6EC32705BD6CE2CD2951A4 /* LessonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonsView.swift; sourceTree = "<group>"; };
 		45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultBannerView.swift; sourceTree = "<group>"; };
 		702E372D6D3213428789FDA4 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
@@ -60,6 +62,7 @@
 				3C6EC32705BD6CE2CD2951A4 /* LessonsView.swift */,
 				702E372D6D3213428789FDA4 /* LogView.swift */,
 				45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */,
+				3143C2FF013A634AE63945E0 /* SettingsView.swift */,
 				2163486976D59A63CEEFC6A0 /* StatsDashboardView.swift */,
 				9728FE05D561D9DA3C1A2B9C /* TableView.swift */,
 			);
@@ -188,6 +191,7 @@
 				9B94EE156CC25CC07366164F /* LogView.swift in Sources */,
 				683DA86231180A71954CCE87 /* PokerCoachApp.swift in Sources */,
 				41F3768EE2AE2395A5F54BF6 /* ResultBannerView.swift in Sources */,
+				E36093F6190BFF80521FCB9E /* SettingsView.swift in Sources */,
 				5CFE0B3C27D2112EC556BBD8 /* StatsDashboardView.swift in Sources */,
 				6EE55F94F73981FC17C63E83 /* TableView.swift in Sources */,
 			);
