@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Drill mode (target icon in the toolbar): ten rapid-fire decision
+  flashcards per run — a hand, a position, a price; pick fold, check/call,
+  or bet/raise and get the coach's verdict and full reasoning instantly,
+  with a score recap at the end. Graded by the same standards as the
+  post-hand review.
+
 ## [1.8.0] - 2026-06-12
 
 ### Added

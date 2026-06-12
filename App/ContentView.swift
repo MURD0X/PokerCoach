@@ -9,6 +9,7 @@ struct ContentView: View {
     @State private var showLog = false
     @State private var showSettings = false
     @State private var showHistory = false
+    @State private var showDrills = false
     @AppStorage(CoachMode.storageKey) private var coachModeRaw = CoachMode.full.rawValue
 
     var body: some View {
@@ -56,6 +57,13 @@ struct ContentView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        showDrills = true
+                    } label: {
+                        Label("Drills", systemImage: "target")
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
                         showLessons = true
                     } label: {
                         Label("Lessons", systemImage: "book.fill")
@@ -82,6 +90,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showLessons) {
                 LessonsView()
+            }
+            .sheet(isPresented: $showDrills) {
+                DrillView()
             }
             .sheet(isPresented: $showWhy) {
                 if let advice = model.advice {
@@ -160,6 +171,7 @@ struct ContentView: View {
                 }
                 if args.contains("-showruin") { model.showRuinSheet = true }
                 if args.contains("-showpicker") { model.showTablePicker = true }
+                if args.contains("-showdrills") { showDrills = true }
                 if args.contains("-demohistory") {
                     if SessionHistoryStore.load().isEmpty {
                         var balance = 10_000
