@@ -21,9 +21,17 @@ struct ContentView: View {
                 .padding(.bottom, 12)
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("Poker Coach")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 0) {
+                        Text("Poker Coach")
+                            .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                        Text("Bankroll \(model.bankroll.balance)")
+                            .font(.system(.caption2, design: .rounded, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         model.newTable()
@@ -85,7 +93,16 @@ struct ContentView: View {
                 SettingsView(model: model)
             }
             .sheet(isPresented: $model.showBustSheet) {
-                BustSheetView(stats: model.session) { model.newTable() }
+                BustSheetView(
+                    stats: model.session,
+                    bankrollBalance: model.bankroll.balance,
+                    canBuyBack: model.bankroll.canAffordBuyIn,
+                    onBuyBack: { model.buyBackIn() },
+                    onNewTable: { model.newTable() }
+                )
+            }
+            .sheet(isPresented: $model.showRuinSheet) {
+                RuinSheetView(lifetime: model.lifetime) { model.acceptFreshBankroll() }
             }
             .onAppear {
                 let args = ProcessInfo.processInfo.arguments
@@ -96,6 +113,7 @@ struct ContentView: View {
                     model.session = SessionStats(handsPlayed: 23, biggestPotWon: 840, decisionsTotal: 31, decisionsFollowed: 22)
                     model.showBustSheet = true
                 }
+                if args.contains("-showruin") { model.showRuinSheet = true }
             }
             .onChange(of: model.engine.stage) {
                 // Debug-only: auto-open the recap sheet for UI verification.
