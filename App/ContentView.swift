@@ -12,10 +12,51 @@ struct ContentView: View {
     @State private var showDrills = false
     @AppStorage(CoachMode.storageKey) private var coachModeRaw = CoachMode.full.rawValue
 
+    private var statusStrip: some View {
+        HStack(spacing: 10) {
+            Button {
+                showHistory = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "banknote")
+                        .font(.footnote)
+                        .foregroundStyle(.green)
+                    Text("\(model.bankroll.balance)")
+                        .font(.system(.subheadline, design: .rounded, weight: .bold))
+                    Text("Bankroll")
+                        .font(.system(.caption2, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            if model.isSeated {
+                Text("Blinds \(model.engine.stakes.name)")
+                    .font(.system(.caption, design: .rounded, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+
+            Button {
+                showLog = true
+            } label: {
+                Image(systemName: "list.bullet.rectangle")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color(.secondarySystemGroupedBackground)))
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 14) {
+                    statusStrip
                     TableView(model: model)
                     StatsDashboardView(model: model)
                 }
@@ -24,22 +65,9 @@ struct ContentView: View {
                 .padding(.bottom, 12)
             }
             .background(Color(.systemGroupedBackground))
+            .navigationTitle("Poker Coach")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Button {
-                        showHistory = true
-                    } label: {
-                        VStack(spacing: 0) {
-                            Text("Poker Coach")
-                                .font(.system(.subheadline, design: .rounded, weight: .semibold))
-                            Text("Bankroll \(model.bankroll.balance)")
-                                .font(.system(.caption2, design: .rounded, weight: .medium))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         model.showTablePicker = true
@@ -49,13 +77,6 @@ struct ContentView: View {
                     .disabled(model.isHandRunning)
                 }
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showLog = true
-                    } label: {
-                        Label("Hand Log", systemImage: "list.bullet.rectangle")
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showDrills = true
                     } label: {
