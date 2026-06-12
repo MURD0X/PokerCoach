@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-06-12
+
 ### Added
 - Bankroll history: tap the bankroll in the header for the long-term view —
   a chart of your bankroll after every session, lifetime net and win rate,
@@ -179,7 +181,8 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/MURD0X/PokerCoach/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/MURD0X/PokerCoach/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/MURD0X/PokerCoach/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/MURD0X/PokerCoach/compare/v1.3.0...v1.4.0
