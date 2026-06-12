@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- The bankroll is prominently visible again: it moved from the crowded
+  title bar into its own strip above the table (tap for history; the hand
+  log lives at its right edge), and the toolbar is a symmetric 2+2.
+
 ### Added
 - Drill mode (target icon in the toolbar): ten rapid-fire decision
   flashcards per run — a hand, a position, a price; pick fold, check/call,
