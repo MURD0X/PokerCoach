@@ -35,6 +35,7 @@ final class GameViewModel: ObservableObject {
     ]
 
     init() {
+        applyAISpeed()
         engine.onChange = { [weak self] in
             self?.objectWillChange.send()
             self?.refreshStatsIfNeeded()
@@ -150,6 +151,10 @@ final class GameViewModel: ObservableObject {
                 toCall: toCall, pot: pot, opponents: opponents, outs: outs
             )
         }
+    }
+
+    func applyAISpeed() {
+        engine.aiDelay = AISpeed.current.delay
     }
 
     func newTable() {
