@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-06-12
+
 ### Added
 - Coach modes (Settings): Full (recommendation + reasoning), Numbers
   (your win % and pot odds only — you make the call), or Off (pure play).
@@ -144,7 +146,8 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/MURD0X/PokerCoach/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/MURD0X/PokerCoach/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/MURD0X/PokerCoach/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/MURD0X/PokerCoach/compare/v1.2.1...v1.2.2
