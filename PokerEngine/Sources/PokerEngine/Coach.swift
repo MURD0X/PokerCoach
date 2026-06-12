@@ -11,10 +11,18 @@ public enum CoachAction: String, Sendable {
 public struct CoachAdvice: Sendable {
     public let action: CoachAction
     public let lines: [String]
+    // The numbers behind the recommendation, for post-hand review.
+    public let equity: Double?
+    public let potOddsNeeded: Double?
+    public let chenScore: Int?
 
-    public init(action: CoachAction, lines: [String]) {
+    public init(action: CoachAction, lines: [String],
+                equity: Double? = nil, potOddsNeeded: Double? = nil, chenScore: Int? = nil) {
         self.action = action
         self.lines = lines
+        self.equity = equity
+        self.potOddsNeeded = potOddsNeeded
+        self.chenScore = chenScore
     }
 }
 
@@ -97,7 +105,7 @@ public enum Coach {
                 lines.append("A weak starting hand. Most beginner losses come from playing too many hands — folding here is the disciplined play.")
             }
         }
-        return CoachAdvice(action: action, lines: lines)
+        return CoachAdvice(action: action, lines: lines, chenScore: score)
     }
 
     public static func postflopAdvice(
@@ -116,8 +124,10 @@ public enum Coach {
         lines.append("Win probability: ~\(eqPct)% against \(opponents) opponent\(opponents > 1 ? "s" : "") (Monte Carlo simulation).")
 
         let action: CoachAction
+        var neededPct: Double?
         if toCall > 0 {
             let potOdds = Double(toCall) / Double(pot + toCall)
+            neededPct = potOdds
             let poPct = Int((potOdds * 100).rounded())
             lines.append("Pot odds: call \(toCall) to win a \(pot + toCall) pot — you need better than \(poPct)% to profit.")
             if eq > potOdds + 0.2 && eq > 0.5 {
@@ -142,6 +152,6 @@ public enum Coach {
                 lines.append("Your hand is not strong enough to bet for value. Check and see a free card.")
             }
         }
-        return CoachAdvice(action: action, lines: lines)
+        return CoachAdvice(action: action, lines: lines, equity: eq, potOddsNeeded: neededPct)
     }
 }
