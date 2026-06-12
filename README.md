@@ -101,6 +101,7 @@ construction, and 25 end-to-end simulated hands asserting chip conservation.
 | `-showruin` | Opens the bankroll-gone sheet (UI verification) |
 | `-showpicker` | Opens the table picker sheet (UI verification) |
 | `-demohistory` | Seeds sample sessions and opens bankroll history (UI verification) |
+| `-demoleave` | Leaves the current table on launch, showing the cash-out recap (UI verification) |
 
 ## Distribution
 

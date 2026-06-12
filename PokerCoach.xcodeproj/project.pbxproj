@@ -28,6 +28,7 @@
 		9B94EE156CC25CC07366164F /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702E372D6D3213428789FDA4 /* LogView.swift */; };
 		9F63F33290544416673A1BDD /* CoachBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A542BBE090D1D1609CFB4A89 /* CoachBarView.swift */; };
 		A3FAD2901E1E1A3465B5F2EA /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E2DC9BFC0C3C0EAAE479B2 /* CardView.swift */; };
+		C3450A12A0F22BE976D7A184 /* LeaveRecapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62E79A54740D8BAEB1D8D35E /* LeaveRecapView.swift */; };
 		E36093F6190BFF80521FCB9E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3143C2FF013A634AE63945E0 /* SettingsView.swift */; };
 		E5A9EBC758E9B75BF41FA149 /* LessonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6EC32705BD6CE2CD2951A4 /* LessonsView.swift */; };
 /* End PBXBuildFile section */
@@ -45,6 +46,7 @@
 		45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultBannerView.swift; sourceTree = "<group>"; };
 		4C5F6F624BE0E41B19DC00EE /* SessionHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistory.swift; sourceTree = "<group>"; };
 		5A4D53E59015A3F3DAC14F24 /* card-deal.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "card-deal.wav"; sourceTree = "<group>"; };
+		62E79A54740D8BAEB1D8D35E /* LeaveRecapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaveRecapView.swift; sourceTree = "<group>"; };
 		702E372D6D3213428789FDA4 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		9728FE05D561D9DA3C1A2B9C /* TableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView.swift; sourceTree = "<group>"; };
 		9F458EE63CC7EE7CDD74705D /* PokerCoach.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PokerCoach.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -79,6 +81,7 @@
 				A542BBE090D1D1609CFB4A89 /* CoachBarView.swift */,
 				180FEF3C6CE85924D840BD60 /* ControlsView.swift */,
 				F511F415CE68CF39F0C69F74 /* HistoryView.swift */,
+				62E79A54740D8BAEB1D8D35E /* LeaveRecapView.swift */,
 				3C6EC32705BD6CE2CD2951A4 /* LessonsView.swift */,
 				702E372D6D3213428789FDA4 /* LogView.swift */,
 				45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */,
@@ -235,6 +238,7 @@
 				7D7C2C5FCC2079274884C4DF /* ControlsView.swift in Sources */,
 				98278DAEF3CAA4DAFE5E5416 /* GameViewModel.swift in Sources */,
 				7F9125C548094E5FFB3F6772 /* HistoryView.swift in Sources */,
+				C3450A12A0F22BE976D7A184 /* LeaveRecapView.swift in Sources */,
 				E5A9EBC758E9B75BF41FA149 /* LessonsView.swift in Sources */,
 				9B94EE156CC25CC07366164F /* LogView.swift in Sources */,
 				683DA86231180A71954CCE87 /* PokerCoachApp.swift in Sources */,

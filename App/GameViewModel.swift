@@ -63,12 +63,16 @@ final class GameViewModel: ObservableObject {
     @Published var showBustSheet = false
     @Published var bankroll = BankrollLedger()
     @Published var showRuinSheet = false
+    @Published var isSeated = false
+    @Published var showTablePicker = false
+    @Published var leaveRecap: (stats: SessionStats, cashedOut: Int, net: Int)?
     private var sessionBuyInTotal = 0
     private var sessionStartDate = Date()
     private var pendingSeat: (() -> Void)?
 
     private enum Keys {
         static let balance = "bankrollBalance"
+        static let tableSnapshot = "tableSnapshot"
         static let lastTableStack = "lastTableStack"
         static let sessions = "lifetimeSessions"
         static let hands = "lifetimeHands"
@@ -102,37 +106,51 @@ final class GameViewModel: ObservableObject {
             self.playTransitionSounds()
             self.objectWillChange.send()
             self.refreshStatsIfNeeded()
-            // Continuous snapshot of table money so a killed app settles up
-            // correctly on next launch (stack + chips committed to the pot).
-            UserDefaults.standard.set(
-                self.engine.hero.stack + self.engine.hero.totalBet,
-                forKey: Keys.lastTableStack
-            )
         }
         engine.heroActionProvider = { [weak self] in
             await self?.heroTurn() ?? .checkCall
         }
 
-        // Settle the previous launch's table, then pay for today's seat.
         let d = UserDefaults.standard
-        var ledger = BankrollLedger(balance: d.object(forKey: Keys.balance) == nil
+        bankroll = BankrollLedger(balance: d.object(forKey: Keys.balance) == nil
             ? BankrollLedger.startingAmount : d.integer(forKey: Keys.balance))
-        let previousStack = d.integer(forKey: Keys.lastTableStack)
-        ledger.cashOut(previousStack)
-        d.set(0, forKey: Keys.lastTableStack)
-        bankroll = ledger
-        // The interrupted session (if any) becomes a history record now.
-        if let snapshot = SessionSnapshot.load() {
-            SessionHistoryStore.append(SessionRecord(
-                date: snapshot.startDate, bigBlind: snapshot.bigBlind,
-                buyInTotal: snapshot.buyInTotal, cashOut: previousStack,
-                hands: snapshot.hands, decisionsTotal: snapshot.decisionsTotal,
-                decisionsFollowed: snapshot.decisionsFollowed,
-                balanceAfter: ledger.balance
-            ))
-            SessionSnapshot.clear()
+
+        if let data = d.data(forKey: Keys.tableSnapshot),
+           let table = try? JSONDecoder().decode(GameEngine.TableSnapshot.self, from: data) {
+            // Same table, same opponents, same stack — the session continues.
+            engine.restore(table)
+            if let snap = SessionSnapshot.load() {
+                sessionStartDate = snap.startDate
+                sessionBuyInTotal = snap.buyInTotal
+                session = SessionStats(
+                    handsPlayed: snap.hands, biggestPotWon: 0,
+                    decisionsTotal: snap.decisionsTotal,
+                    decisionsFollowed: snap.decisionsFollowed
+                )
+            }
+            d.set(0, forKey: Keys.lastTableStack) // retire the legacy key
+            isSeated = true
+        } else if d.integer(forKey: Keys.lastTableStack) > 0 {
+            // One-time migration from pre-persistence builds: settle the old
+            // table money and record the interrupted session.
+            let previousStack = d.integer(forKey: Keys.lastTableStack)
+            bankroll.cashOut(previousStack)
+            d.set(0, forKey: Keys.lastTableStack)
+            saveBankroll()
+            if let snap = SessionSnapshot.load() {
+                SessionHistoryStore.append(SessionRecord(
+                    date: snap.startDate, bigBlind: snap.bigBlind,
+                    buyInTotal: snap.buyInTotal, cashOut: previousStack,
+                    hands: snap.hands, decisionsTotal: snap.decisionsTotal,
+                    decisionsFollowed: snap.decisionsFollowed,
+                    balanceAfter: bankroll.balance
+                ))
+                SessionSnapshot.clear()
+            }
+            isSeated = false
+        } else {
+            isSeated = false
         }
-        chargeForSeat { [weak self] in self?.beginSession() }
     }
 
     private func saveBankroll() {
@@ -148,11 +166,15 @@ final class GameViewModel: ObservableObject {
         d.set(d.integer(forKey: Keys.sessions) + 1, forKey: Keys.sessions)
     }
 
-    private func snapshotTableStack() {
-        UserDefaults.standard.set(
-            engine.hero.stack + engine.hero.totalBet,
-            forKey: Keys.lastTableStack
-        )
+    private func snapshotTable() {
+        if let table = engine.snapshot(),
+           let data = try? JSONEncoder().encode(table) {
+            UserDefaults.standard.set(data, forKey: Keys.tableSnapshot)
+        }
+    }
+
+    private func clearTableSnapshot() {
+        UserDefaults.standard.removeObject(forKey: Keys.tableSnapshot)
     }
 
     private func beginSession() {
@@ -191,14 +213,14 @@ final class GameViewModel: ObservableObject {
         if bankroll.chargeBuyIn(cost) {
             saveBankroll()
             proceed()
-            snapshotTableStack()
+            snapshotTable()
         } else {
             pendingSeat = { [weak self] in
                 guard let self else { return }
                 self.bankroll.chargeBuyIn(cost)
                 self.saveBankroll()
                 proceed()
-                self.snapshotTableStack()
+                self.snapshotTable()
             }
             showRuinSheet = true
         }
@@ -226,6 +248,10 @@ final class GameViewModel: ObservableObject {
 
     func dealHand() {
         guard !isHandRunning else { return }
+        guard isSeated else {
+            showTablePicker = true
+            return
+        }
         guard !engine.heroBusted else {
             showBustSheet = true
             return
@@ -295,7 +321,10 @@ final class GameViewModel: ObservableObject {
     }
 
     private func recordHandOutcome() {
-        defer { snapshotSession() }
+        defer {
+            snapshotSession()
+            snapshotTable()
+        }
         let d = UserDefaults.standard
         d.set(d.integer(forKey: Keys.hands) + 1, forKey: Keys.hands)
         session.handsPlayed = engine.handNumber
@@ -421,26 +450,50 @@ final class GameViewModel: ObservableObject {
         engine.aiDelay = AISpeed.current.delay
     }
 
-    func newTable(stakes: TableStakes? = nil) {
-        guard !isHandRunning else { return }
-        let target = stakes ?? engine.stakes
-        UserDefaults.standard.set(target.bigBlind, forKey: GameViewModel.stakesKey)
-        // Cash out the current seat, record the session, pay for the next one.
+    /// Leave the current table: bank the stack, record the session, show
+    /// the recap. The player is unseated until they pick a new table.
+    func leaveTable() {
+        guard isSeated, !isHandRunning else { return }
         let cashOut = engine.hero.stack
+        let net = cashOut - sessionBuyInTotal
         bankroll.cashOut(cashOut)
         saveBankroll()
         closeSession(cashOut: cashOut)
+        clearTableSnapshot()
+        isSeated = false
         showBustSheet = false
-        chargeForSeat(target.buyIn) { [weak self] in
+        leaveRecap = (session, cashOut, net)
+    }
+
+    /// Sit at a table (from the picker). Used both when unseated and when
+    /// switching tables mid-visit — switching cashes out the old seat first.
+    func sitDown(stakes: TableStakes) {
+        guard !isHandRunning else { return }
+        if isSeated {
+            let cashOut = engine.hero.stack
+            bankroll.cashOut(cashOut)
+            saveBankroll()
+            closeSession(cashOut: cashOut)
+        }
+        UserDefaults.standard.set(stakes.bigBlind, forKey: GameViewModel.stakesKey)
+        showBustSheet = false
+        chargeForSeat(stakes.buyIn) { [weak self] in
             guard let self else { return }
-            self.engine.newTable(stakes: target)
+            self.engine.newTable(stakes: stakes)
             self.stats = nil
             self.advice = nil
             self.equityHistory = []
             self.lastStatsKey = ""
             self.session = SessionStats()
             self.beginSession()
+            self.isSeated = true
         }
+    }
+
+    /// Busting keeps you at the same table conceptually; 'find a new table'
+    /// from the bust sheet routes through the picker via the UI.
+    func newTable(stakes: TableStakes? = nil) {
+        sitDown(stakes: stakes ?? engine.stakes)
     }
 
     // MARK: - Bet sizing for the controls
