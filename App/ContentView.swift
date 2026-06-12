@@ -8,7 +8,6 @@ struct ContentView: View {
     @State private var showResultDetails = false
     @State private var showLog = false
     @State private var showSettings = false
-    @State private var showTablePicker = false
     @State private var showHistory = false
     @AppStorage(CoachMode.storageKey) private var coachModeRaw = CoachMode.full.rawValue
 
@@ -42,7 +41,7 @@ struct ContentView: View {
                 }
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        showTablePicker = true
+                        model.showTablePicker = true
                     } label: {
                         Label("New Table", systemImage: "dice.fill")
                     }
@@ -109,19 +108,37 @@ struct ContentView: View {
                     onBuyBack: { model.buyBackIn() },
                     onNewTable: {
                         model.showBustSheet = false
-                        showTablePicker = true
+                        model.showTablePicker = true
                     }
                 )
             }
             .sheet(isPresented: $showHistory) {
                 HistoryView(records: SessionHistoryStore.load(), currentBalance: model.bankroll.balance)
             }
-            .sheet(isPresented: $showTablePicker) {
+            .sheet(isPresented: $model.showTablePicker) {
                 TablePickerView(
                     bankroll: model.bankroll.balance,
-                    currentStakes: model.engine.stakes
+                    currentStakes: model.isSeated ? model.engine.stakes : nil,
+                    canLeave: model.isSeated && !model.isHandRunning,
+                    onLeave: { model.leaveTable() }
                 ) { stakes in
-                    model.newTable(stakes: stakes)
+                    model.sitDown(stakes: stakes)
+                }
+            }
+            .sheet(isPresented: Binding(
+                get: { model.leaveRecap != nil },
+                set: { if !$0 { model.leaveRecap = nil } }
+            )) {
+                if let recap = model.leaveRecap {
+                    LeaveRecapView(
+                        stats: recap.stats, cashedOut: recap.cashedOut, net: recap.net,
+                        bankrollBalance: model.bankroll.balance,
+                        onFindTable: {
+                            model.leaveRecap = nil
+                            model.showTablePicker = true
+                        },
+                        onDone: { model.leaveRecap = nil }
+                    )
                 }
             }
             .sheet(isPresented: $model.showRuinSheet) {
@@ -129,7 +146,11 @@ struct ContentView: View {
             }
             .onAppear {
                 let args = ProcessInfo.processInfo.arguments
-                if args.contains("-autodeal") { model.dealHand() }
+                if args.contains("-autodeal") {
+                    if !model.isSeated { model.sitDown(stakes: .standard) }
+                    model.dealHand()
+                }
+                if args.contains("-demoleave"), model.isSeated { model.leaveTable() }
                 if args.contains("-showlog") { showLog = true }
                 if args.contains("-showsettings") { showSettings = true }
                 if args.contains("-showbust") {
@@ -137,7 +158,7 @@ struct ContentView: View {
                     model.showBustSheet = true
                 }
                 if args.contains("-showruin") { model.showRuinSheet = true }
-                if args.contains("-showpicker") { showTablePicker = true }
+                if args.contains("-showpicker") { model.showTablePicker = true }
                 if args.contains("-demohistory") {
                     if SessionHistoryStore.load().isEmpty {
                         var balance = 10_000

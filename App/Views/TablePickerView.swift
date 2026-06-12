@@ -6,7 +6,9 @@ import PokerEngine
 // classic ≤10% guideline color-coded.
 struct TablePickerView: View {
     let bankroll: Int
-    let currentStakes: TableStakes
+    let currentStakes: TableStakes?
+    var canLeave = false
+    var onLeave: () -> Void = {}
     let onPick: (TableStakes) -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -25,6 +27,20 @@ struct TablePickerView: View {
                     }
                 } footer: {
                     Text("Buy-in is 50 big blinds. The classic bankroll guideline: keep a table's buy-in under 10% of your bankroll, so a bad session can't hurt you.")
+                }
+
+                if canLeave {
+                    Section {
+                        Button(role: .destructive) {
+                            dismiss()
+                            onLeave()
+                        } label: {
+                            Label("Cash Out & Leave the Table", systemImage: "figure.walk")
+                                .font(.system(.body, design: .rounded, weight: .semibold))
+                        }
+                    } footer: {
+                        Text("Banks your current stack into the bankroll and records the session.")
+                    }
                 }
             }
             .navigationTitle("Choose a table")

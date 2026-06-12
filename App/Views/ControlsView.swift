@@ -40,17 +40,39 @@ struct ControlsView: View {
                         .tint(option.label.hasPrefix("All-in") ? .orange : .green)
                     }
                 }
-            } else if !model.isHandRunning {
+            } else if !model.isHandRunning, !model.isSeated {
                 Button {
-                    model.dealHand()
+                    model.showTablePicker = true
                 } label: {
-                    Label("Deal Hand", systemImage: "suit.spade.fill")
+                    Label("Choose a Table", systemImage: "chair")
                         .font(.system(.body, design: .rounded, weight: .bold))
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.green)
                 .controlSize(.large)
+            } else if !model.isHandRunning {
+                HStack(spacing: 8) {
+                    Button {
+                        model.leaveTable()
+                    } label: {
+                        Label("Leave", systemImage: "figure.walk")
+                            .font(.system(.footnote, design: .rounded, weight: .semibold))
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+
+                    Button {
+                        model.dealHand()
+                    } label: {
+                        Label("Deal Hand", systemImage: "suit.spade.fill")
+                            .font(.system(.body, design: .rounded, weight: .bold))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.green)
+                    .controlSize(.large)
+                }
             } else {
                 HStack(spacing: 8) {
                     ProgressView()

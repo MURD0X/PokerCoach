@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Cash Out & Leave: an explicit way to walk away — bank your stack, see a
+  session recap ("You leave with 1,450 — up 450"), and stay unseated until
+  you choose your next table. Available next to Deal Hand between hands and
+  in the table picker.
+- Your table survives app restarts: quit and come back to the same
+  opponents, the same revealed styles, and the same stack. A hand
+  interrupted mid-deal rewinds to its start with all chips safe. First
+  launch now starts unseated — choosing your first table (and its price)
+  is the opening lesson.
+
 ## [1.7.0] - 2026-06-12
 
 ### Added
