@@ -8,15 +8,24 @@ struct CoachBarView: View {
     @ObservedObject var model: GameViewModel
     let advice: CoachAdvice
     @Binding var showWhy: Bool
+    @AppStorage(CoachMode.storageKey) private var coachModeRaw = CoachMode.full.rawValue
+
+    private var mode: CoachMode { CoachMode(rawValue: coachModeRaw) ?? .full }
 
     var body: some View {
         HStack(spacing: 10) {
-            Text(advice.action.rawValue)
-                .font(.system(.footnote, design: .rounded, weight: .bold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Capsule().fill(badgeColor))
+            if mode == .full {
+                Text(advice.action.rawValue)
+                    .font(.system(.footnote, design: .rounded, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(badgeColor))
+            } else {
+                Image(systemName: "chart.bar.fill")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
 
             Text(summary)
                 .font(.system(.footnote, design: .rounded, weight: .medium))
@@ -25,16 +34,18 @@ struct CoachBarView: View {
 
             Spacer(minLength: 4)
 
-            Button {
-                showWhy = true
-            } label: {
-                Label("Why?", systemImage: "questionmark.circle.fill")
-                    .font(.system(.footnote, design: .rounded, weight: .semibold))
-                    .labelStyle(.titleAndIcon)
+            if mode == .full {
+                Button {
+                    showWhy = true
+                } label: {
+                    Label("Why?", systemImage: "questionmark.circle.fill")
+                        .font(.system(.footnote, design: .rounded, weight: .semibold))
+                        .labelStyle(.titleAndIcon)
+                }
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.capsule)
+                .controlSize(.small)
             }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.capsule)
-            .controlSize(.small)
         }
         .padding(.horizontal, 16)
         .padding(.top, 10)

@@ -8,6 +8,7 @@ struct ContentView: View {
     @State private var showResultDetails = false
     @State private var showLog = false
     @State private var showSettings = false
+    @AppStorage(CoachMode.storageKey) private var coachModeRaw = CoachMode.full.rawValue
 
     var body: some View {
         NavigationStack {
@@ -64,7 +65,7 @@ struct ContentView: View {
             }
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 VStack(spacing: 0) {
-                    if let advice = model.advice, model.isHeroTurn {
+                    if let advice = model.advice, model.isHeroTurn, coachModeRaw != CoachMode.off.rawValue {
                         CoachBarView(model: model, advice: advice, showWhy: $showWhy)
                     } else if model.engine.stage == .done, let result = model.engine.lastResult {
                         ResultStripView(result: result) { showResultDetails = true }
