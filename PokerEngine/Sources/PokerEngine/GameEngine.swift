@@ -202,6 +202,12 @@ public final class GameEngine {
 
     private func notify() { onChange?() }
 
+    // Log lines address the hero in the second person ("You call"), everyone
+    // else in the third ("Maya calls").
+    private func verb(_ index: Int, _ base: String) -> String {
+        players[index].isHero ? base : base + "s"
+    }
+
     /// Test hook: force a stack value to exercise bust paths quickly.
     func setStackForTesting(_ amount: Int, seat: Int) {
         players[seat].stack = amount
@@ -256,13 +262,13 @@ public final class GameEngine {
         let sb = (dealerIndex + 1) % players.count
         let bb = (dealerIndex + 2) % players.count
 
-        emit("— Hand #\(handNumber) — \(players[dealerIndex].name) has the dealer button.", .header)
+        emit("— Hand #\(handNumber) — \(players[dealerIndex].name) \(players[dealerIndex].isHero ? "have" : "has") the dealer button.", .header)
         pay(sb, GameEngine.smallBlind)
         players[sb].lastAction = "SB \(GameEngine.smallBlind)"
         pay(bb, GameEngine.bigBlind)
         players[bb].lastAction = "BB \(GameEngine.bigBlind)"
         currentBet = GameEngine.bigBlind
-        emit("\(players[sb].name) posts small blind \(GameEngine.smallBlind), \(players[bb].name) posts big blind \(GameEngine.bigBlind).")
+        emit("\(players[sb].name) \(verb(sb, "post")) small blind \(GameEngine.smallBlind), \(players[bb].name) \(verb(bb, "post")) big blind \(GameEngine.bigBlind).")
 
         let streets: [(Stage, Int, Int)] = [
             (.preflop, 0, (bb + 1) % players.count),
@@ -293,12 +299,13 @@ public final class GameEngine {
                 players[winnerIdx].stack += pot
                 for i in players.indices { players[i].totalBet = 0 }
                 let winner = players[winnerIdx].name
+                let winVerb = verb(winnerIdx, "win")
                 lastResult = HandResult(
                     potTotal: pot, showdowns: [], winnerNames: [winner],
                     headline: "\(winner) win\(winnerIdx == 0 ? "" : "s") \(pot) — everyone else folded",
                     explanation: nil, winningCards: []
                 )
-                emit("\(winner) wins \(pot) — everyone else folded.", .win)
+                emit("\(winner) \(winVerb) \(pot) — everyone else folded.", .win)
                 stage = .done
                 actingIndex = nil
                 notify()
@@ -415,28 +422,32 @@ public final class GameEngine {
             // Folding when checking is free is never right; treat as a check.
             if toCall == 0 {
                 players[index].lastAction = "Check"
-                emit("\(name) checks.")
+                emit("\(name) \(verb(index, "check")).")
                 return
             }
             players[index].folded = true
             players[index].lastAction = "Fold"
-            emit("\(name) folds.")
+            emit("\(name) \(verb(index, "fold")).")
 
         case .checkCall:
             if toCall <= 0 {
                 players[index].lastAction = "Check"
-                emit("\(name) checks.")
+                emit("\(name) \(verb(index, "check")).")
                 return
             }
             let paid = pay(index, toCall)
             let allIn = players[index].allIn
             players[index].lastAction = allIn ? "All-in \(players[index].betThisRound)" : "Call \(paid)"
-            emit("\(name) calls \(paid)\(allIn ? " and is all-in" : "").")
+            emit("\(name) \(verb(index, "call")) \(paid)\(allIn ? (players[index].isHero ? " and are all-in" : " and is all-in") : "").")
 
         case .raise(var to):
-            to = min(to, players[index].betThisRound + players[index].stack)
+            // Normalize any raise request into an action that always moves
+            // chips: a legal raise, a short all-in, or (at minimum) a call.
+            // An under-min request from a short stack must never become a
+            // zero-chip no-op — that can loop the betting round forever.
+            let maxTo = players[index].betThisRound + players[index].stack
             let minTo = currentBet + minRaise
-            if to < minTo && players[index].betThisRound + players[index].stack >= minTo { to = minTo }
+            to = min(max(to, minTo), maxTo)
             let isBet = currentBet == 0
             pay(index, to - players[index].betThisRound)
             if players[index].betThisRound > currentBet {
@@ -452,7 +463,7 @@ public final class GameEngine {
             let allIn = players[index].allIn
             let total = players[index].betThisRound
             players[index].lastAction = allIn ? "All-in \(total)" : "\(isBet ? "Bet" : "Raise to") \(total)"
-            emit("\(name) \(isBet ? "bets" : "raises to") \(total)\(allIn ? " (all-in)" : "").")
+            emit("\(name) \(isBet ? verb(index, "bet") : verb(index, "raise") + " to") \(total)\(allIn ? " (all-in)" : "").")
         }
     }
 
@@ -483,7 +494,7 @@ public final class GameEngine {
         emit("Showdown!", .street)
         for i in players.indices where !players[i].folded {
             let score = HandEvaluator.bestScore(players[i].hole + board)
-            emit("\(players[i].name) shows \(players[i].hole.map(\.text).joined(separator: " ")) — \(HandEvaluator.name(of: score)).")
+            emit("\(players[i].name) \(verb(i, "show")) \(players[i].hole.map(\.text).joined(separator: " ")) — \(HandEvaluator.name(of: score)).")
             if !players[i].isHero { players[i].showdownsShown += 1 }
         }
         let potTotal = totalPot
@@ -508,7 +519,8 @@ public final class GameEngine {
             }
             let label = pots.count > 1 ? (potIndex == 0 ? "main pot" : "side pot \(potIndex)") : "the pot"
             let names = winners.map { players[$0].name }.joined(separator: " and ")
-            emit("\(names) win\(winners.count == 1 ? "s" : "") \(label) of \(pot.amount) with \(HandEvaluator.name(of: bestScore)).", .win)
+            let winVerb = (winners.count == 1 && !players[winners[0]].isHero) ? "wins" : "win"
+            emit("\(names) \(winVerb) \(label) of \(pot.amount) with \(HandEvaluator.name(of: bestScore)).", .win)
         }
 
         lastResult = composeShowdownResult(potTotal: potTotal, amountWon: amountWon)

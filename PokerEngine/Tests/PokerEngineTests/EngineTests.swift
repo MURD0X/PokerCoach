@@ -272,6 +272,42 @@ final class GameFlowTests: XCTestCase {
             XCTAssertEqual(engine.stage, .done)
         }
         XCTAssertTrue(raised, "hero never got to act in 20 hands")
-        XCTAssertTrue(engine.log.contains { $0.text.contains("You") && ($0.text.contains("raises") || $0.text.contains("bets")) })
+        XCTAssertTrue(engine.log.contains { $0.text.contains("You raise") || $0.text.contains("You bet") },
+            "hero raise should be logged in the second person")
+    }
+}
+
+@MainActor
+final class LogGrammarTests: XCTestCase {
+    // The hero is addressed in the second person: "You call", never "You calls".
+    func testHeroLogLinesUseSecondPerson() async {
+        let engine = GameEngine()
+        engine.aiDelay = .zero
+        var first = true
+        engine.heroActionProvider = {
+            defer { first = false }
+            return first ? .raise(to: 60) : .checkCall
+        }
+        var transcript = ""
+        for _ in 0..<30 {
+            first = true
+            topUpAllStacks(engine)
+            await engine.playHand()
+            transcript += engine.log.map(\.text).joined(separator: "\n") + "\n"
+        }
+        let thirdPersonSlips = [
+            "You has", "You folds", "You checks", "You calls", "You bets",
+            "You raises", "You wins", "You posts", "You shows", "You is all-in",
+        ]
+        for slip in thirdPersonSlips {
+            XCTAssertFalse(transcript.contains(slip), "log contains \"\(slip)\"")
+        }
+        // And the second person actually appears for common actions.
+        XCTAssertTrue(
+            transcript.contains("You check") || transcript.contains("You call")
+                || transcript.contains("You raise") || transcript.contains("You fold")
+                || transcript.contains("You post"),
+            "no second-person hero lines found in 30 hands"
+        )
     }
 }
