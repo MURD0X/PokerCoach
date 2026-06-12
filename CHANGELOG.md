@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Coach modes (Settings): Full (recommendation + reasoning), Numbers
+  (your win % and pot odds only — you make the call), or Off (pure play).
+  The natural progression as you improve; decisions are graded against
+  the coach quietly in every mode, so the session recap stays honest.
+
 ### Changed
 - The coach now plays position: preflop thresholds tighten under the gun
   and loosen on the button, every preflop advice names your position and
