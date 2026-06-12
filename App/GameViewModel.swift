@@ -238,7 +238,9 @@ final class GameViewModel: ObservableObject {
               engine.activeOpponentCount > 0
         else { return }
 
-        let key = "\(engine.handNumber)-\(engine.board.count)-\(engine.activeOpponentCount)"
+        let constraints = engine.observedConstraints()
+        let constraintKey = constraints.map { "\($0.minChen ?? -1)" }.joined(separator: ",")
+        let key = "\(engine.handNumber)-\(engine.board.count)-\(engine.activeOpponentCount)-\(constraintKey)"
         guard key != lastStatsKey else { return }
         lastStatsKey = key
 
@@ -249,7 +251,7 @@ final class GameViewModel: ObservableObject {
         statsTask?.cancel()
         statsTask = Task { [weak self] in
             let result = await Task.detached(priority: .userInitiated) {
-                let equity = Equity.estimate(hole: hole, board: board, opponents: opponents, trials: 2500)
+                let equity = Equity.estimate(hole: hole, board: board, opponents: opponents, trials: 2500, constraints: constraints)
                 let outs = Outs.compute(hole: hole, board: board)
                 let score = board.isEmpty ? 0 : HandEvaluator.bestScore(hole + board)
                 return (equity, outs, score)
@@ -283,19 +285,15 @@ final class GameViewModel: ObservableObject {
             advice = Coach.preflopAdvice(hole: hole, toCall: toCall, bigBlind: GameEngine.bigBlind)
             return
         }
+        let constraints = engine.observedConstraints()
         Task { [weak self] in
-            // Reuse the dashboard's equity if it's for this exact spot.
-            let equity: EquityResult
-            let outs: [OutInfo]
-            if let stats = self?.stats, stats.opponents == opponents, self?.engine.board.count == board.count {
-                equity = stats.equity
-                outs = stats.outs
-            } else {
-                (equity, outs) = await Task.detached(priority: .userInitiated) {
-                    (Equity.estimate(hole: hole, board: board, opponents: opponents, trials: 1500),
-                     Outs.compute(hole: hole, board: board))
-                }.value
-            }
+            // Always fresh at the decision moment: the opponents' actions
+            // (and therefore their ranges) may have changed since the
+            // dashboard stats were computed.
+            let (equity, outs) = await Task.detached(priority: .userInitiated) {
+                (Equity.estimate(hole: hole, board: board, opponents: opponents, trials: 1500, constraints: constraints),
+                 Outs.compute(hole: hole, board: board))
+            }.value
             guard let self, self.isHeroTurn else { return }
             self.advice = Coach.postflopAdvice(
                 hole: hole, board: board, equity: equity,
