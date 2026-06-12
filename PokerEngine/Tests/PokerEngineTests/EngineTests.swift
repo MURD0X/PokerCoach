@@ -177,6 +177,15 @@ final class HandResultTests: XCTestCase {
     }
 }
 
+// Keeps every seat solvent so longitudinal tests can deal indefinitely now
+// that the engine no longer rebuys busted players automatically.
+@MainActor
+func topUpAllStacks(_ engine: GameEngine) {
+    for i in engine.players.indices where engine.players[i].stack == 0 {
+        engine.setStackForTesting(GameEngine.startingStack, seat: i)
+    }
+}
+
 @MainActor
 final class HandResultIntegrationTests: XCTestCase {
     // Every completed hand must produce a coherent result: a headline, winners,
@@ -189,6 +198,7 @@ final class HandResultIntegrationTests: XCTestCase {
         var sawShowdown = false
 
         for _ in 0..<40 {
+            topUpAllStacks(engine)
             await engine.playHand()
             guard let result = engine.lastResult else {
                 return XCTFail("hand #\(engine.handNumber) finished without a result")
@@ -232,6 +242,7 @@ final class GameFlowTests: XCTestCase {
         // Scripted hero: always check/call so every hand reaches showdown or fold-win.
         engine.heroActionProvider = { .checkCall }
         for _ in 0..<25 {
+            topUpAllStacks(engine)
             await engine.playHand()
             XCTAssertEqual(engine.stage, .done)
             let total = engine.players.reduce(0) { $0 + $1.stack + $1.totalBet }
@@ -256,6 +267,7 @@ final class GameFlowTests: XCTestCase {
         // The hero isn't guaranteed a turn in any single hand — opponents can
         // all fold before the action arrives. Deal until the hero has acted.
         for _ in 0..<20 where !raised {
+            topUpAllStacks(engine)
             await engine.playHand()
             XCTAssertEqual(engine.stage, .done)
         }

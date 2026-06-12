@@ -79,6 +79,7 @@ final class PersonalityBehaviorTests: XCTestCase {
 
         var nitFolds = 0, gamblerFolds = 0
         for _ in 0..<40 {
+            topUpAllStacks(engine)
             await engine.playHand()
             nitFolds += engine.log.filter { $0.text == "Nit folds." }.count
             gamblerFolds += engine.log.filter { $0.text == "Gambler folds." }.count
@@ -104,7 +105,10 @@ final class PersonalityBehaviorTests: XCTestCase {
         XCTAssertNil(initial.skill)
         XCTAssertEqual(initial.summary, "? · ? · ?")
 
-        for _ in 0..<15 { await engine.playHand() }
+        for _ in 0..<15 {
+            topUpAllStacks(engine)
+            await engine.playHand()
+        }
 
         let reveal = engine.styleReveal(for: 1)
         // 15 hands seen — tightness must be revealed, and truthfully.
@@ -122,11 +126,53 @@ final class PersonalityBehaviorTests: XCTestCase {
         XCTAssertFalse(engine.styleReveal(for: 0).anythingKnown)
     }
 
+    func testBustedOpponentIsReplacedByNewPlayer() async {
+        let engine = GameEngine(opponents: [
+            ("Doomed", .balanced), ("B", .balanced), ("C", .balanced),
+        ])
+        engine.aiDelay = .zero
+        engine.heroActionProvider = { .checkCall }
+        engine.setStackForTesting(0, seat: 1)
+
+        await engine.playHand()
+
+        let replacement = engine.players[1]
+        XCTAssertNotEqual(replacement.name, "Doomed", "busted opponent should leave")
+        XCTAssertNotNil(replacement.personality)
+        // Fresh player: reveal evidence starts over (1 hand seen = this hand).
+        XCTAssertLessThanOrEqual(replacement.handsSeen, 1)
+        XCTAssertEqual(replacement.showdownsShown <= 1, true)
+        XCTAssertFalse(engine.styleReveal(for: 1).anythingKnown)
+        XCTAssertTrue(engine.log.contains { $0.text.contains("leaves the table") })
+        // Seat identity is stable for the UI.
+        XCTAssertEqual(replacement.id, 1)
+    }
+
+    func testEngineRefusesToDealWhenHeroBusted() async {
+        let engine = GameEngine()
+        engine.aiDelay = .zero
+        engine.heroActionProvider = { .checkCall }
+        engine.setStackForTesting(0, seat: 0)
+
+        XCTAssertTrue(engine.heroBusted)
+        await engine.playHand()
+        XCTAssertEqual(engine.handNumber, 0, "no hand should be dealt while the hero is busted")
+
+        // A new table resets the session and dealing works again.
+        engine.newTable()
+        XCTAssertFalse(engine.heroBusted)
+        await engine.playHand()
+        XCTAssertEqual(engine.handNumber, 1)
+    }
+
     func testNewTableResetsEverything() async {
         let engine = GameEngine()
         engine.aiDelay = .zero
         engine.heroActionProvider = { .checkCall }
-        for _ in 0..<3 { await engine.playHand() }
+        for _ in 0..<3 {
+            topUpAllStacks(engine)
+            await engine.playHand()
+        }
         XCTAssertEqual(engine.handNumber, 3)
 
         let oldNames = Set(engine.players.dropFirst().map(\.name))
