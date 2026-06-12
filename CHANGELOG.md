@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-06-12
+
 ### Added
 - Table animations: chips fly from seats to the pot on bets and from the
   pot to the winner; hole cards deal around the table with a stagger.
@@ -155,7 +157,8 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/MURD0X/PokerCoach/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/MURD0X/PokerCoach/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/MURD0X/PokerCoach/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/MURD0X/PokerCoach/compare/v1.2.2...v1.3.0
