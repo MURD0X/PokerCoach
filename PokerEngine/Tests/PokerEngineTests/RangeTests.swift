@@ -80,3 +80,41 @@ final class PreflopActionTrackingTests: XCTestCase {
         XCTAssertEqual(engine.hero.preflopAction, .raised)
     }
 }
+
+@MainActor
+final class RaiseProgressTests: XCTestCase {
+    // Regression for an infinite betting loop: a hero who stubbornly answers
+    // "raise to 60" forever — even when 60 is below the current bet and the
+    // stack can't make a legal min-raise — must still complete every hand
+    // (the engine normalizes the request to a raise, all-in, or call).
+    func testStubbornUnderMinRaiserCannotHangTheHand() async {
+        let engine = GameEngine(opponents: [
+            ("A", Personality(tightness: 0.2, aggression: 1.0, skill: 0.5)),
+            ("B", Personality(tightness: 0.2, aggression: 1.0, skill: 0.5)),
+            ("C", .balanced),
+        ])
+        engine.aiDelay = .zero
+        engine.heroActionProvider = { .raise(to: 60) }
+
+        for _ in 0..<15 {
+            topUpAllStacks(engine)
+            // Guard with a timeout so a regression fails fast instead of
+            // hanging the whole suite.
+            let completed = await withTaskGroup(of: Bool.self) { group in
+                group.addTask { @MainActor in
+                    await engine.playHand()
+                    return true
+                }
+                group.addTask {
+                    try? await Task.sleep(for: .seconds(20))
+                    return false
+                }
+                let first = await group.next()!
+                group.cancelAll()
+                return first
+            }
+            XCTAssertTrue(completed, "hand \(engine.handNumber + 1) did not complete — betting loop hang")
+            if !completed { break }
+        }
+    }
+}

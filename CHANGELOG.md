@@ -6,6 +6,16 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- Hand log grammar: your own actions read in the second person — "You have
+  the dealer button", "You call 20", "You win the pot" — instead of "You
+  has" / "You calls".
+- Engine hardening: a malformed raise request (below the legal minimum from
+  a stack too short to min-raise) could become a zero-chip action and loop
+  the betting round forever. All raise requests are now normalized to a
+  legal raise, a short all-in, or a call — the engine can no longer be
+  hung by any action input.
+
 ## [1.6.0] - 2026-06-12
 
 ### Added
