@@ -7,6 +7,9 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Table animations: chips fly from seats to the pot on bets and from the
+  pot to the winner; hole cards deal around the table with a stagger.
+  Skipped automatically when Reduce Motion is on.
 - Sound & haptics: soft card-deal and chip sounds, a quiet win chime, and a
   light haptic tap when the action reaches you. Both toggleable in Settings
   (new "Feel" section); sounds respect the silent switch and mix with your

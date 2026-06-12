@@ -15,6 +15,13 @@ struct LifetimeStats {
     var ruins = 0
 }
 
+struct ChipFlight: Identifiable, Equatable {
+    let id = UUID()
+    let seat: Int
+    /// false: seat → pot (a bet). true: pot → seat (a win).
+    let reverse: Bool
+}
+
 struct SessionStats {
     var handsPlayed = 0
     var biggestPotWon = 0
@@ -45,6 +52,7 @@ final class GameViewModel: ObservableObject {
     @Published var equityHistory: [StreetEquity] = []
     @Published var isHandRunning = false
     @Published var session = SessionStats()
+    @Published var chipFlights: [ChipFlight] = []
     @Published var showBustSheet = false
     @Published var bankroll = BankrollLedger()
     @Published var showRuinSheet = false
@@ -185,8 +193,34 @@ final class GameViewModel: ObservableObject {
     private var lastBoardCount = 0
     private var lastPot = 0
     private var lastHandNumber = 0
+    private var lastSeatBets: [Int] = []
+
+    private func launchChipFlight(seat: Int, reverse: Bool) {
+        guard !UIAccessibility.isReduceMotionEnabled else { return }
+        let flight = ChipFlight(seat: seat, reverse: reverse)
+        chipFlights.append(flight)
+        Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(650))
+            self?.chipFlights.removeAll { $0.id == flight.id }
+        }
+    }
 
     private func playTransitionSounds() {
+        // Chip flights: any seat whose round-bet grew just put chips in.
+        let bets = engine.players.map(\.betThisRound)
+        if lastSeatBets.count == bets.count, lastHandNumber == engine.handNumber {
+            for (seat, bet) in bets.enumerated() where bet > lastSeatBets[seat] {
+                launchChipFlight(seat: seat, reverse: false)
+            }
+        }
+        lastSeatBets = bets
+        if engine.stage == .done, let result = engine.lastResult, lastPot != 0 {
+            for name in result.winnerNames {
+                if let seat = engine.players.firstIndex(where: { $0.name == name }) {
+                    launchChipFlight(seat: seat, reverse: true)
+                }
+            }
+        }
         if engine.board.count > lastBoardCount || engine.handNumber != lastHandNumber {
             if engine.handNumber != lastHandNumber || engine.board.count > lastBoardCount {
                 SoundManager.shared.play(.cardDeal)
