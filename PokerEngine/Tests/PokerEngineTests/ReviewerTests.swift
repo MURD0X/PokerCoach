@@ -63,3 +63,37 @@ final class AdviceNumbersTests: XCTestCase {
         XCTAssertEqual(advice.chenScore, 20)
     }
 }
+
+final class LessonTopicTests: XCTestCase {
+    func testAdviceCarriesTopics() {
+        let pre = Coach.preflopAdvice(hole: [Card(14, .spades), Card(14, .hearts)],
+                                      toCall: 20, bigBlind: 20, position: .button)
+        XCTAssertEqual(pre.topics, [.chen, .position])
+
+        let post = Coach.postflopAdvice(
+            hole: [Card(14, .hearts), Card(7, .hearts)],
+            board: [Card(2, .hearts), Card(9, .hearts), Card(13, .clubs)],
+            equity: EquityResult(win: 0.4, tie: 0.02),
+            toCall: 50, pot: 150, opponents: 1,
+            outs: Outs.compute(hole: [Card(14, .hearts), Card(7, .hearts)],
+                               board: [Card(2, .hearts), Card(9, .hearts), Card(13, .clubs)])
+        )
+        XCTAssertTrue(post.topics.contains(.potOdds))
+        XCTAssertTrue(post.topics.contains(.outs), "flush draw advice should link the outs lesson")
+    }
+
+    func testChenBreakdownSumsToScore() {
+        let hands: [[Card]] = [
+            [Card(14, .spades), Card(14, .hearts)],   // AA = 20
+            [Card(14, .spades), Card(13, .spades)],   // AKs = 12
+            [Card(11, .clubs), Card(10, .clubs)],     // JTs = 9
+            [Card(7, .diamonds), Card(2, .clubs)],    // 72o = -1
+            [Card(2, .spades), Card(2, .hearts)],     // 22 floors at 5
+        ]
+        for hole in hands {
+            let total = Chen.breakdown(hole).reduce(0.0) { $0 + $1.points }
+            XCTAssertEqual(Int(total.rounded(.up)), Chen.score(hole),
+                "breakdown steps must sum to the score for \(hole.map(\.text))")
+        }
+    }
+}
