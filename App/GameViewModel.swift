@@ -15,6 +15,17 @@ struct LifetimeStats {
     var ruins = 0
 }
 
+struct DecisionRecord: Identifiable {
+    let id = UUID()
+    let street: Stage
+    let board: [Card]
+    let toCall: Int
+    let pot: Int
+    let recommendation: CoachAction
+    let action: HeroAction
+    let review: DecisionReview
+}
+
 struct ChipFlight: Identifiable, Equatable {
     let id = UUID()
     let seat: Int
@@ -66,6 +77,7 @@ final class GameViewModel: ObservableObject {
     @Published var isSeated = false
     @Published var showTablePicker = false
     @Published var leaveRecap: (stats: SessionStats, cashedOut: Int, net: Int)?
+    @Published var handDecisions: [DecisionRecord] = []
     private var sessionBuyInTotal = 0
     private var sessionStartDate = Date()
     private var pendingSeat: (() -> Void)?
@@ -258,6 +270,7 @@ final class GameViewModel: ObservableObject {
         }
         isHandRunning = true
         equityHistory = []
+        handDecisions = []
         stats = nil
         advice = nil
         lastStatsKey = ""
@@ -367,6 +380,16 @@ final class GameViewModel: ObservableObject {
         if let advice {
             session.decisionsTotal += 1
             if actionMatchesAdvice(action, advice.action) { session.decisionsFollowed += 1 }
+            handDecisions.append(DecisionRecord(
+                street: engine.stage, board: engine.board,
+                toCall: engine.heroToCall, pot: engine.totalPot,
+                recommendation: advice.action, action: action,
+                review: Reviewer.review(
+                    recommendation: advice.action, action: action,
+                    equity: advice.equity, potOddsNeeded: advice.potOddsNeeded,
+                    street: engine.stage
+                )
+            ))
         }
         pendingAction = nil
         isHeroTurn = false

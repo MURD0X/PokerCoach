@@ -37,6 +37,7 @@ struct ResultStripView: View {
 struct ResultDetailSheet: View {
     let result: HandResult
     var equityHistory: [StreetEquity] = []
+    var decisions: [DecisionRecord] = []
     @Environment(\.dismiss) private var dismiss
 
     private var heroWon: Bool { result.winnerNames.contains("You") }
@@ -95,6 +96,10 @@ struct ResultDetailSheet: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
 
+                    if !decisions.isEmpty {
+                        reviewSection
+                    }
+
                     if equityHistory.count >= 2 {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("YOUR WIN % BY STREET")
@@ -137,5 +142,89 @@ struct ResultDetailSheet: View {
         if value >= 0.6 { return .green }
         if value >= 0.4 { return .orange }
         return .red
+    }
+
+    // MARK: - Decision review
+
+    private var worstLeak: DecisionRecord? {
+        decisions.filter { $0.review.verdict == .leak }
+            .max { $0.review.severity < $1.review.severity }
+    }
+
+    private var reviewSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("YOUR DECISIONS, REVIEWED")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            ForEach(decisions) { decision in
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: icon(for: decision.review.verdict))
+                        .font(.footnote)
+                        .foregroundStyle(color(for: decision.review.verdict))
+                        .frame(width: 18)
+                        .padding(.top, 1)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(streetName(decision.street)) — you \(describe(decision.action))\(decision.toCall > 0 ? " facing \(decision.toCall)" : "")")
+                            .font(.system(.footnote, design: .rounded, weight: .semibold))
+                        Text(decision.review.line)
+                            .font(.system(.caption, design: .rounded))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+
+            if let lesson = worstLeak {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "lightbulb.fill")
+                        .font(.footnote)
+                        .foregroundStyle(.yellow)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("The lesson of this hand")
+                            .font(.system(.footnote, design: .rounded, weight: .bold))
+                        Text("\(streetName(lesson.street)): \(lesson.review.line)")
+                            .font(.system(.caption, design: .rounded))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(10)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.yellow.opacity(0.12)))
+            }
+        }
+    }
+
+    private func streetName(_ stage: Stage) -> String {
+        switch stage {
+        case .preflop: return "Preflop"
+        case .flop: return "Flop"
+        case .turn: return "Turn"
+        case .river: return "River"
+        default: return stage.rawValue.capitalized
+        }
+    }
+
+    private func describe(_ action: HeroAction) -> String {
+        switch action {
+        case .fold: return "folded"
+        case .checkCall: return "checked/called"
+        case .raise(let to): return "raised to \(to)"
+        }
+    }
+
+    private func icon(for verdict: ReviewVerdict) -> String {
+        switch verdict {
+        case .followed: return "checkmark.circle.fill"
+        case .acceptable: return "equal.circle.fill"
+        case .leak: return "xmark.circle.fill"
+        }
+    }
+
+    private func color(for verdict: ReviewVerdict) -> Color {
+        switch verdict {
+        case .followed: return .green
+        case .acceptable: return .orange
+        case .leak: return .red
+        }
     }
 }
