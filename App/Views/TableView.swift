@@ -1,6 +1,41 @@
 import SwiftUI
 import PokerEngine
 
+// Anchor plumbing so chip flights know where seats and the pot live.
+struct SeatAnchorKey: PreferenceKey {
+    static var defaultValue: [Int: Anchor<CGPoint>] = [:]
+    static func reduce(value: inout [Int: Anchor<CGPoint>], nextValue: () -> [Int: Anchor<CGPoint>]) {
+        value.merge(nextValue()) { $1 }
+    }
+}
+
+struct PotAnchorKey: PreferenceKey {
+    static var defaultValue: Anchor<CGPoint>? = nil
+    static func reduce(value: inout Anchor<CGPoint>?, nextValue: () -> Anchor<CGPoint>?) {
+        value = nextValue() ?? value
+    }
+}
+
+// One chip sliding seat→pot or pot→seat.
+struct ChipFlightView: View {
+    let from: CGPoint
+    let to: CGPoint
+    @State private var arrived = false
+
+    var body: some View {
+        Circle()
+            .fill(Color(red: 0.95, green: 0.83, blue: 0.45))
+            .overlay(Circle().strokeBorder(.white.opacity(0.7), lineWidth: 2))
+            .frame(width: 16, height: 16)
+            .position(arrived ? to : from)
+            .opacity(arrived ? 0.2 : 1)
+            .onAppear {
+                withAnimation(.easeIn(duration: 0.5)) { arrived = true }
+            }
+            .allowsHitTesting(false)
+    }
+}
+
 struct TableView: View {
     @ObservedObject var model: GameViewModel
 
@@ -20,7 +55,7 @@ struct TableView: View {
         VStack(spacing: 18) {
             HStack(alignment: .top, spacing: 10) {
                 ForEach(engine.players.dropFirst()) { player in
-                    SeatView(
+                    seatAnchored(player.id) { SeatView(
                         player: player,
                         isDealer: engine.dealerIndex == player.id && engine.stage != .idle,
                         isActing: engine.actingIndex == player.id,
@@ -28,13 +63,14 @@ struct TableView: View {
                         cardWidth: 32,
                         winningCards: winningCards,
                         reveal: engine.styleReveal(for: player.id)
-                    )
+                    ) }
                 }
             }
 
             VStack(spacing: 8) {
                 if engine.stage != .idle {
                     Text("Pot \(engine.totalPot)")
+                        .anchorPreference(key: PotAnchorKey.self, value: .center) { $0 }
                         .font(.system(.subheadline, design: .rounded, weight: .bold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 14)
@@ -53,14 +89,14 @@ struct TableView: View {
                 }
             }
 
-            SeatView(
+            seatAnchored(0) { SeatView(
                 player: engine.hero,
                 isDealer: engine.dealerIndex == 0 && engine.stage != .idle,
                 isActing: engine.actingIndex == 0,
                 showCards: true,
                 cardWidth: 52,
                 winningCards: winningCards
-            )
+            ) }
         }
         .padding(.vertical, 22)
         .padding(.horizontal, 14)
@@ -80,6 +116,38 @@ struct TableView: View {
         )
         .animation(.spring(duration: 0.45), value: engine.board.count)
         .animation(.easeInOut(duration: 0.25), value: engine.actingIndex)
+        .overlayPreferenceValue(SeatAnchorKey.self) { seatAnchors in
+            self.flightOverlay(seatAnchors: seatAnchors)
+        }
+    }
+
+    private func seatAnchored<Content: View>(_ id: Int, @ViewBuilder content: () -> Content) -> some View {
+        content().anchorPreference(key: SeatAnchorKey.self, value: .center) { [id: $0] }
+    }
+
+    @ViewBuilder
+    private func flightOverlay(seatAnchors: [Int: Anchor<CGPoint>]) -> some View {
+        GeometryReader { geo in
+            // The pot anchor lives in a separate preference; resolve it lazily.
+            potOverlay(geo: geo, seatAnchors: seatAnchors)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func potOverlay(geo: GeometryProxy, seatAnchors: [Int: Anchor<CGPoint>]) -> some View {
+        // Approximate the pot point when the label isn't rendered (idle).
+        let fallbackPot = CGPoint(x: geo.size.width / 2, y: geo.size.height * 0.40)
+        return ZStack {
+            ForEach(model.chipFlights) { flight in
+                if let seatAnchor = seatAnchors[flight.seat] {
+                    let seatPoint = geo[seatAnchor]
+                    ChipFlightView(
+                        from: flight.reverse ? fallbackPot : seatPoint,
+                        to: flight.reverse ? seatPoint : fallbackPot
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -135,8 +203,10 @@ struct SeatView: View {
                     ForEach(player.hole) { card in
                         CardView(face: showCards || player.isHero ? .up(card) : .down, width: cardWidth,
                                  glow: showCards && !player.folded && winningCards.contains(card))
+                            .transition(.scale(scale: 0.3, anchor: .top).combined(with: .opacity))
                     }
                 }
+                .animation(.spring(duration: 0.4).delay(Double(player.id) * 0.1), value: player.hole)
             }
 
             Text(player.lastAction.isEmpty ? " " : player.lastAction)
