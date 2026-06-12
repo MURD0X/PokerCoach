@@ -48,7 +48,7 @@ struct CoachBarView: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.top, 10)
+        .padding(.top, 8)
     }
 
     // One line of the numbers that drive the decision, e.g.

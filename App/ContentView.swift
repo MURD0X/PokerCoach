@@ -48,21 +48,21 @@ struct ContentView: View {
             .buttonStyle(.plain)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
         .background(RoundedRectangle(cornerRadius: 14).fill(Color(.secondarySystemGroupedBackground)))
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 14) {
+                VStack(spacing: 10) {
                     statusStrip
                     TableView(model: model)
                     StatsDashboardView(model: model)
                 }
                 .padding(.horizontal, 14)
-                .padding(.top, 6)
-                .padding(.bottom, 12)
+                .padding(.top, 4)
+                .padding(.bottom, 8)
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Poker Coach")

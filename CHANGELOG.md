@@ -7,6 +7,10 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Fixed
+- The main screen now fits without scrolling on phone-class displays: a
+  padding diet across the table, dashboard, and bars, and the dashboard's
+  pot-odds row (which duplicated the coach bar's "need X%") was retired.
+  Scrolling remains only as a fallback for very small devices.
 - The bankroll is prominently visible again: it moved from the crowded
   title bar into its own strip above the table (tap for history; the hand
   log lives at its right edge), and the toolbar is a symmetric 2+2.

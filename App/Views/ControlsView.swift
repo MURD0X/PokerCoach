@@ -81,11 +81,11 @@ struct ControlsView: View {
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
+                .padding(.vertical, 8)
             }
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
         .animation(.easeInOut(duration: 0.2), value: model.isHeroTurn)
     }
 }
