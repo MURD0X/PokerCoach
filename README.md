@@ -99,6 +99,7 @@ construction, and 25 end-to-end simulated hands asserting chip conservation.
 | `-showsettings` | Opens the settings sheet on launch (UI verification) |
 | `-showbust` | Opens the out-of-chips sheet with sample stats (UI verification) |
 | `-showruin` | Opens the bankroll-gone sheet (UI verification) |
+| `-showpicker` | Opens the table picker sheet (UI verification) |
 
 ## Distribution
 

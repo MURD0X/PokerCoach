@@ -8,6 +8,7 @@ struct ContentView: View {
     @State private var showResultDetails = false
     @State private var showLog = false
     @State private var showSettings = false
+    @State private var showTablePicker = false
     @AppStorage(CoachMode.storageKey) private var coachModeRaw = CoachMode.full.rawValue
 
     var body: some View {
@@ -35,7 +36,7 @@ struct ContentView: View {
                 }
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        model.newTable()
+                        showTablePicker = true
                     } label: {
                         Label("New Table", systemImage: "dice.fill")
                     }
@@ -97,10 +98,22 @@ struct ContentView: View {
                 BustSheetView(
                     stats: model.session,
                     bankrollBalance: model.bankroll.balance,
-                    canBuyBack: model.bankroll.canAffordBuyIn,
+                    buyIn: model.engine.stakes.buyIn,
+                    canBuyBack: model.bankroll.canAfford(model.engine.stakes.buyIn),
                     onBuyBack: { model.buyBackIn() },
-                    onNewTable: { model.newTable() }
+                    onNewTable: {
+                        model.showBustSheet = false
+                        showTablePicker = true
+                    }
                 )
+            }
+            .sheet(isPresented: $showTablePicker) {
+                TablePickerView(
+                    bankroll: model.bankroll.balance,
+                    currentStakes: model.engine.stakes
+                ) { stakes in
+                    model.newTable(stakes: stakes)
+                }
             }
             .sheet(isPresented: $model.showRuinSheet) {
                 RuinSheetView(lifetime: model.lifetime) { model.acceptFreshBankroll() }
@@ -115,6 +128,7 @@ struct ContentView: View {
                     model.showBustSheet = true
                 }
                 if args.contains("-showruin") { model.showRuinSheet = true }
+                if args.contains("-showpicker") { showTablePicker = true }
             }
             .onChange(of: model.engine.stage) {
                 // Debug-only: auto-open the recap sheet for UI verification.

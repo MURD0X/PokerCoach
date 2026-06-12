@@ -44,7 +44,14 @@ struct HandStats {
 
 @MainActor
 final class GameViewModel: ObservableObject {
-    let engine = GameEngine()
+    let engine: GameEngine
+
+    static let stakesKey = "tableBigBlind"
+
+    static func persistedStakes() -> TableStakes {
+        let bb = UserDefaults.standard.integer(forKey: stakesKey)
+        return TableStakes.all.first { $0.bigBlind == bb } ?? .standard
+    }
 
     @Published var isHeroTurn = false
     @Published var advice: CoachAdvice?
@@ -86,6 +93,7 @@ final class GameViewModel: ObservableObject {
     ]
 
     init() {
+        engine = GameEngine(stakes: GameViewModel.persistedStakes())
         applyAISpeed()
         engine.onChange = { [weak self] in
             guard let self else { return }
@@ -136,15 +144,16 @@ final class GameViewModel: ObservableObject {
     // Pays the buy-in, or raises the ruin sheet and parks the intent until
     // the player takes a fresh bankroll. Snapshots the table money right
     // after seating so a launch-and-quit never loses the buy-in.
-    private func chargeForSeat(then proceed: @escaping () -> Void) {
-        if bankroll.chargeBuyIn() {
+    private func chargeForSeat(_ amount: Int? = nil, then proceed: @escaping () -> Void) {
+        let cost = amount ?? engine.stakes.buyIn
+        if bankroll.chargeBuyIn(cost) {
             saveBankroll()
             proceed()
             snapshotTableStack()
         } else {
             pendingSeat = { [weak self] in
                 guard let self else { return }
-                self.bankroll.chargeBuyIn()
+                self.bankroll.chargeBuyIn(cost)
                 self.saveBankroll()
                 proceed()
                 self.snapshotTableStack()
@@ -366,15 +375,17 @@ final class GameViewModel: ObservableObject {
         engine.aiDelay = AISpeed.current.delay
     }
 
-    func newTable() {
+    func newTable(stakes: TableStakes? = nil) {
         guard !isHandRunning else { return }
+        let target = stakes ?? engine.stakes
+        UserDefaults.standard.set(target.bigBlind, forKey: GameViewModel.stakesKey)
         // Cash out the current seat, then pay for the next one.
         bankroll.cashOut(engine.hero.stack)
         saveBankroll()
         showBustSheet = false
-        chargeForSeat { [weak self] in
+        chargeForSeat(target.buyIn) { [weak self] in
             guard let self else { return }
-            self.engine.newTable()
+            self.engine.newTable(stakes: target)
             self.stats = nil
             self.advice = nil
             self.equityHistory = []
