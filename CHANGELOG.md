@@ -7,6 +7,10 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Lessons: "Reading your opponents" section explaining the three personality
+  dials (Tight/Loose, Passive/Aggressive, skill), how style reveals unlock
+  with evidence, how to exploit each player type, and why reads reset when
+  a player busts.
 - Bankroll: a persistent 10,000-chip bankroll behind your table money.
   Sitting at a table costs a 1,000 buy-in; leaving returns your stack;
   busting returns nothing — and you can now buy back in at the same table
