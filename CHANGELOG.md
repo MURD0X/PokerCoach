@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Going broke now ends the session with an "Out of chips" recap — hands
+  played, biggest pot won, and how often you followed the coach's advice —
+  and a Take a New Seat button that seats you at a fresh table. Coach
+  adherence is tracked per decision throughout the session.
+
 ### Changed
 - Busting now matters: opponents who lose their stack leave the table and a
   new random player takes the seat (with a fresh hidden personality — your

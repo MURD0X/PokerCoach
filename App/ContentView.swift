@@ -84,11 +84,18 @@ struct ContentView: View {
             .sheet(isPresented: $showSettings) {
                 SettingsView(model: model)
             }
+            .sheet(isPresented: $model.showBustSheet) {
+                BustSheetView(stats: model.session) { model.newTable() }
+            }
             .onAppear {
                 let args = ProcessInfo.processInfo.arguments
                 if args.contains("-autodeal") { model.dealHand() }
                 if args.contains("-showlog") { showLog = true }
                 if args.contains("-showsettings") { showSettings = true }
+                if args.contains("-showbust") {
+                    model.session = SessionStats(handsPlayed: 23, biggestPotWon: 840, decisionsTotal: 31, decisionsFollowed: 22)
+                    model.showBustSheet = true
+                }
             }
             .onChange(of: model.engine.stage) {
                 // Debug-only: auto-open the recap sheet for UI verification.

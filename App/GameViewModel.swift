@@ -8,6 +8,18 @@ struct StreetEquity: Identifiable {
     var id: Int { order }
 }
 
+struct SessionStats {
+    var handsPlayed = 0
+    var biggestPotWon = 0
+    var decisionsTotal = 0
+    var decisionsFollowed = 0
+
+    var adherencePercent: Int? {
+        guard decisionsTotal > 0 else { return nil }
+        return Int((Double(decisionsFollowed) / Double(decisionsTotal) * 100).rounded())
+    }
+}
+
 struct HandStats {
     var equity: EquityResult
     var outs: [OutInfo]
@@ -25,6 +37,8 @@ final class GameViewModel: ObservableObject {
     @Published var stats: HandStats?
     @Published var equityHistory: [StreetEquity] = []
     @Published var isHandRunning = false
+    @Published var session = SessionStats()
+    @Published var showBustSheet = false
 
     private var pendingAction: CheckedContinuation<HeroAction, Never>?
     private var statsTask: Task<Void, Never>?
@@ -47,6 +61,10 @@ final class GameViewModel: ObservableObject {
 
     func dealHand() {
         guard !isHandRunning else { return }
+        guard !engine.heroBusted else {
+            showBustSheet = true
+            return
+        }
         isHandRunning = true
         equityHistory = []
         stats = nil
@@ -56,6 +74,31 @@ final class GameViewModel: ObservableObject {
             await engine.playHand()
             isHandRunning = false
             isHeroTurn = false
+            recordHandOutcome()
+            if engine.heroBusted { showBustSheet = true }
+        }
+    }
+
+    private func recordHandOutcome() {
+        session.handsPlayed = engine.handNumber
+        guard let result = engine.lastResult else { return }
+        let heroWinnings: Int
+        if result.wonByFolds {
+            heroWinnings = result.winnerNames.contains("You") ? result.potTotal : 0
+        } else {
+            heroWinnings = result.showdowns.first { $0.playerID == 0 }?.amountWon ?? 0
+        }
+        session.biggestPotWon = max(session.biggestPotWon, heroWinnings)
+    }
+
+    // The recommendation is "followed" when the hero's action falls in the
+    // same family as the coach's: check/call ↔ checkCall, bet/raise ↔ raise.
+    private func actionMatchesAdvice(_ action: HeroAction, _ recommendation: CoachAction) -> Bool {
+        switch (recommendation, action) {
+        case (.fold, .fold): return true
+        case (.check, .checkCall), (.call, .checkCall): return true
+        case (.bet, .raise(_)), (.raise, .raise(_)): return true
+        default: return false
         }
     }
 
@@ -73,6 +116,10 @@ final class GameViewModel: ObservableObject {
 
     func perform(_ action: HeroAction) {
         guard let continuation = pendingAction else { return }
+        if let advice {
+            session.decisionsTotal += 1
+            if actionMatchesAdvice(action, advice.action) { session.decisionsFollowed += 1 }
+        }
         pendingAction = nil
         isHeroTurn = false
         advice = nil
@@ -164,6 +211,8 @@ final class GameViewModel: ObservableObject {
         advice = nil
         equityHistory = []
         lastStatsKey = ""
+        session = SessionStats()
+        showBustSheet = false
     }
 
     // MARK: - Bet sizing for the controls
