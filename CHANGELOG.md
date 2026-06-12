@@ -12,6 +12,8 @@ All notable changes to this project are documented here. The format follows
   blinds, stack), Take a Seat when you're between tables, and doors to
   Drills, Lessons, History, and Settings. The table is now a screen you
   enter; going back never cashes you out.
+- The home header is set in Copperplate — the engraved cardroom letterform
+  — per user selection from rendered candidates.
 - A matching launch screen (felt + the fanned cards from the icon), so
   opening the app feels like one continuous moment.
 

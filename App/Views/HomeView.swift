@@ -45,10 +45,11 @@ struct HomeView: View {
             }
             .padding(.top, 26)
             Text("Poker Coach")
-                .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                .font(.custom("Copperplate", size: 34))
                 .foregroundStyle(.white)
-            Text("Learn Texas Hold'em at a fair table")
-                .font(.system(.subheadline, design: .rounded))
+            Text("LEARN TEXAS HOLD'EM AT A FAIR TABLE")
+                .font(.custom("Copperplate-Light", size: 12))
+                .kerning(1.2)
                 .foregroundStyle(.white.opacity(0.75))
                 .padding(.bottom, 24)
         }
