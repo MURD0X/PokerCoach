@@ -46,6 +46,15 @@ struct LessonsView: View {
                     lesson("How the coach uses it", "10+ points: premium — raise. 8–9: strong — raise, or call a big re-raise. 6–7: playable — worth a cheap look at the flop. Below 6: fold to any bet; checking is always fine when it's free.")
                 }
 
+                Section("Reading your opponents — the three dials") {
+                    lesson("Every opponent is different", "Each player at the table is rolled on three hidden dials: how picky they are about starting hands (Tight ↔ Loose), how hard they push their chips (Passive ↔ Aggressive), and how well they play the math (Rookie / Solid / Expert). The dials genuinely drive every decision they make — a tight player folds junk hands, an aggressive one bets thinner and bluffs more, a rookie misjudges their own hand and calls when the price is wrong.")
+                    lesson("Earning the read", "Styles start hidden — that's the ? · ? · ? under each name. Traits reveal as you gather evidence, the way a real read forms: hand selection after about 8 hands, betting style after about 10 of their decisions, and skill only after you've seen their cards at 3 showdowns.")
+                    lesson("Exploiting tight or loose players", "Against Tight: steal their blinds freely, but believe their raises — they have it. Against Loose: value-bet more hands and bluff less; they call too often for bluffing to pay.")
+                    lesson("Exploiting passive or aggressive players", "Against Passive: when they do bet, respect it — but bet yourself whenever they check, because they surrender too much. Against Aggressive: let them do the betting with your strong hands, and call down lighter — many of their bets are air.")
+                    lesson("Exploiting skill levels", "Against a Rookie (the classic calling station): never bluff, value-bet relentlessly, even with medium hands. Against an Expert: tighten up, take free cards, and pick your spots — they punish loose play.")
+                    lesson("Reads reset", "When a player busts, they leave and someone new takes the seat — with fresh hidden dials. Knocking out the player you'd figured out has a real cost: the unknown who replaces them.")
+                }
+
                 Section("Fair dealing in this app") {
                     lesson("Cryptographic shuffle", "Every hand uses a fresh 52-card deck shuffled with Fisher-Yates driven by the system's cryptographic random number generator — every deck order is equally likely.")
                     lesson("No peeking", "The AI opponents decide using only their own cards and the board, exactly like human players. Bad beats here are real poker variance, not a rigged deck.")
