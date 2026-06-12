@@ -57,6 +57,8 @@ struct SettingsView: View {
     @ObservedObject var model: GameViewModel
     @AppStorage(AISpeed.storageKey) private var aiSpeedRaw = AISpeed.fast.rawValue
     @AppStorage(CoachMode.storageKey) private var coachModeRaw = CoachMode.full.rawValue
+    @AppStorage(SoundManager.soundsKey) private var soundsEnabled = true
+    @AppStorage(SoundManager.hapticsKey) private var hapticsEnabled = true
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -86,6 +88,15 @@ struct SettingsView: View {
                     Text("Coach")
                 } footer: {
                     Text("Full: recommendation with written reasoning. Numbers: your win % and pot odds only — you make the call. Off: pure play. Your decisions are graded against the coach quietly in every mode, so the session recap stays honest.")
+                }
+
+                Section {
+                    Toggle("Sounds", isOn: $soundsEnabled)
+                    Toggle("Haptics", isOn: $hapticsEnabled)
+                } header: {
+                    Text("Feel")
+                } footer: {
+                    Text("Card and chip sounds respect the silent switch. Haptics include a light tap when the action reaches you.")
                 }
             }
             .navigationTitle("Settings")

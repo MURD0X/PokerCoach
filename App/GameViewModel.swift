@@ -81,6 +81,7 @@ final class GameViewModel: ObservableObject {
         applyAISpeed()
         engine.onChange = { [weak self] in
             guard let self else { return }
+            self.playTransitionSounds()
             self.objectWillChange.send()
             self.refreshStatsIfNeeded()
             // Continuous snapshot of table money so a killed app settles up
@@ -181,6 +182,30 @@ final class GameViewModel: ObservableObject {
         }
     }
 
+    private var lastBoardCount = 0
+    private var lastPot = 0
+    private var lastHandNumber = 0
+
+    private func playTransitionSounds() {
+        if engine.board.count > lastBoardCount || engine.handNumber != lastHandNumber {
+            if engine.handNumber != lastHandNumber || engine.board.count > lastBoardCount {
+                SoundManager.shared.play(.cardDeal)
+            }
+        }
+        let pot = engine.totalPot
+        if pot > lastPot, lastHandNumber == engine.handNumber {
+            SoundManager.shared.play(.chipClink)
+        }
+        if engine.stage == .done, let result = engine.lastResult,
+           result.winnerNames.contains("You"), lastPot != 0 {
+            SoundManager.shared.play(.winChime)
+            SoundManager.shared.winHaptic()
+        }
+        lastBoardCount = engine.board.count
+        lastPot = engine.stage == .done ? 0 : pot
+        lastHandNumber = engine.handNumber
+    }
+
     private func recordHandOutcome() {
         let d = UserDefaults.standard
         d.set(d.integer(forKey: Keys.hands) + 1, forKey: Keys.hands)
@@ -208,6 +233,7 @@ final class GameViewModel: ObservableObject {
 
     private func heroTurn() async -> HeroAction {
         isHeroTurn = true
+        SoundManager.shared.heroTurnHaptic()
         computeAdvice()
         if ProcessInfo.processInfo.arguments.contains("-autopilot") {
             Task { [weak self] in

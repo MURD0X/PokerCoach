@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Sound & haptics: soft card-deal and chip sounds, a quiet win chime, and a
+  light haptic tap when the action reaches you. Both toggleable in Settings
+  (new "Feel" section); sounds respect the silent switch and mix with your
+  music.
+
 ## [1.5.0] - 2026-06-12
 
 ### Added
