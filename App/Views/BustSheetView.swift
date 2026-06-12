@@ -1,11 +1,26 @@
 import SwiftUI
+import PokerEngine
+
+// Type-erased button style so the primary/secondary role can swap at runtime.
+struct AnyButtonStyle: PrimitiveButtonStyle {
+    private let _makeBody: (Configuration) -> AnyView
+    init<S: PrimitiveButtonStyle>(_ style: S) {
+        _makeBody = { AnyView(style.makeBody(configuration: $0)) }
+    }
+    func makeBody(configuration: Configuration) -> some View {
+        _makeBody(configuration)
+    }
+}
 
 // Session-over moment: factual and reflective, not theatrical. The sheet
 // cannot be swiped away — the only way forward is a fresh table, because
 // going broke ends the session (that's the lesson).
 struct BustSheetView: View {
     let stats: SessionStats
-    let onNewSeat: () -> Void
+    let bankrollBalance: Int
+    let canBuyBack: Bool
+    let onBuyBack: () -> Void
+    let onNewTable: () -> Void
 
     var body: some View {
         VStack(spacing: 18) {
@@ -25,18 +40,31 @@ struct BustSheetView: View {
                 if let adherence = stats.adherencePercent {
                     recapRow("graduationcap", "Followed the coach", "\(adherence)% of \(stats.decisionsTotal) decisions")
                 }
+                recapRow("banknote", "Bankroll", "\(bankrollBalance)")
             }
             .padding(16)
             .background(RoundedRectangle(cornerRadius: 16).fill(Color(.secondarySystemGroupedBackground)))
 
-            Button(action: onNewSeat) {
-                Label("Take a New Seat", systemImage: "chair")
-                    .font(.system(.body, design: .rounded, weight: .bold))
-                    .frame(maxWidth: .infinity)
+            VStack(spacing: 8) {
+                if canBuyBack {
+                    Button(action: onBuyBack) {
+                        Label("Buy Back In (−\(BankrollLedger.buyIn))", systemImage: "arrow.counterclockwise")
+                            .font(.system(.body, design: .rounded, weight: .bold))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.green)
+                    .controlSize(.large)
+                }
+                Button(action: onNewTable) {
+                    Label(canBuyBack ? "Leave — Find a New Table" : "Find a New Table (−\(BankrollLedger.buyIn))", systemImage: "chair")
+                        .font(.system(.body, design: .rounded, weight: canBuyBack ? .semibold : .bold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(canBuyBack ? AnyButtonStyle(.bordered) : AnyButtonStyle(.borderedProminent))
+                .tint(canBuyBack ? .secondary : .green)
+                .controlSize(.large)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.green)
-            .controlSize(.large)
 
             Spacer(minLength: 0)
         }

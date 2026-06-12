@@ -8,6 +8,13 @@ struct StreetEquity: Identifiable {
     var id: Int { order }
 }
 
+struct LifetimeStats {
+    var sessions = 0
+    var hands = 0
+    var peakBankroll = BankrollLedger.startingAmount
+    var ruins = 0
+}
+
 struct SessionStats {
     var handsPlayed = 0
     var biggestPotWon = 0
@@ -39,6 +46,28 @@ final class GameViewModel: ObservableObject {
     @Published var isHandRunning = false
     @Published var session = SessionStats()
     @Published var showBustSheet = false
+    @Published var bankroll = BankrollLedger()
+    @Published var showRuinSheet = false
+    private var pendingSeat: (() -> Void)?
+
+    private enum Keys {
+        static let balance = "bankrollBalance"
+        static let lastTableStack = "lastTableStack"
+        static let sessions = "lifetimeSessions"
+        static let hands = "lifetimeHands"
+        static let peak = "lifetimePeakBankroll"
+        static let ruins = "lifetimeRuins"
+    }
+
+    var lifetime: LifetimeStats {
+        let d = UserDefaults.standard
+        return LifetimeStats(
+            sessions: d.integer(forKey: Keys.sessions),
+            hands: d.integer(forKey: Keys.hands),
+            peakBankroll: max(d.integer(forKey: Keys.peak), BankrollLedger.startingAmount),
+            ruins: d.integer(forKey: Keys.ruins)
+        )
+    }
 
     private var pendingAction: CheckedContinuation<HeroAction, Never>?
     private var statsTask: Task<Void, Never>?
@@ -51,11 +80,84 @@ final class GameViewModel: ObservableObject {
     init() {
         applyAISpeed()
         engine.onChange = { [weak self] in
-            self?.objectWillChange.send()
-            self?.refreshStatsIfNeeded()
+            guard let self else { return }
+            self.objectWillChange.send()
+            self.refreshStatsIfNeeded()
+            // Continuous snapshot of table money so a killed app settles up
+            // correctly on next launch (stack + chips committed to the pot).
+            UserDefaults.standard.set(
+                self.engine.hero.stack + self.engine.hero.totalBet,
+                forKey: Keys.lastTableStack
+            )
         }
         engine.heroActionProvider = { [weak self] in
             await self?.heroTurn() ?? .checkCall
+        }
+
+        // Settle the previous launch's table, then pay for today's seat.
+        let d = UserDefaults.standard
+        var ledger = BankrollLedger(balance: d.object(forKey: Keys.balance) == nil
+            ? BankrollLedger.startingAmount : d.integer(forKey: Keys.balance))
+        ledger.cashOut(d.integer(forKey: Keys.lastTableStack))
+        d.set(0, forKey: Keys.lastTableStack)
+        bankroll = ledger
+        chargeForSeat { [weak self] in self?.bumpSessions() }
+    }
+
+    private func saveBankroll() {
+        let d = UserDefaults.standard
+        d.set(bankroll.balance, forKey: Keys.balance)
+        if bankroll.balance > d.integer(forKey: Keys.peak) {
+            d.set(bankroll.balance, forKey: Keys.peak)
+        }
+    }
+
+    private func bumpSessions() {
+        let d = UserDefaults.standard
+        d.set(d.integer(forKey: Keys.sessions) + 1, forKey: Keys.sessions)
+    }
+
+    private func snapshotTableStack() {
+        UserDefaults.standard.set(
+            engine.hero.stack + engine.hero.totalBet,
+            forKey: Keys.lastTableStack
+        )
+    }
+
+    // Pays the buy-in, or raises the ruin sheet and parks the intent until
+    // the player takes a fresh bankroll. Snapshots the table money right
+    // after seating so a launch-and-quit never loses the buy-in.
+    private func chargeForSeat(then proceed: @escaping () -> Void) {
+        if bankroll.chargeBuyIn() {
+            saveBankroll()
+            proceed()
+            snapshotTableStack()
+        } else {
+            pendingSeat = { [weak self] in
+                guard let self else { return }
+                self.bankroll.chargeBuyIn()
+                self.saveBankroll()
+                proceed()
+                self.snapshotTableStack()
+            }
+            showRuinSheet = true
+        }
+    }
+
+    func acceptFreshBankroll() {
+        let d = UserDefaults.standard
+        d.set(d.integer(forKey: Keys.ruins) + 1, forKey: Keys.ruins)
+        bankroll.resetAfterRuin()
+        saveBankroll()
+        showRuinSheet = false
+        pendingSeat?()
+        pendingSeat = nil
+    }
+
+    func buyBackIn() {
+        showBustSheet = false
+        chargeForSeat { [weak self] in
+            self?.engine.rebuyHero()
         }
     }
 
@@ -80,6 +182,8 @@ final class GameViewModel: ObservableObject {
     }
 
     private func recordHandOutcome() {
+        let d = UserDefaults.standard
+        d.set(d.integer(forKey: Keys.hands) + 1, forKey: Keys.hands)
         session.handsPlayed = engine.handNumber
         guard let result = engine.lastResult else { return }
         let heroWinnings: Int
@@ -206,13 +310,20 @@ final class GameViewModel: ObservableObject {
 
     func newTable() {
         guard !isHandRunning else { return }
-        engine.newTable()
-        stats = nil
-        advice = nil
-        equityHistory = []
-        lastStatsKey = ""
-        session = SessionStats()
+        // Cash out the current seat, then pay for the next one.
+        bankroll.cashOut(engine.hero.stack)
+        saveBankroll()
         showBustSheet = false
+        chargeForSeat { [weak self] in
+            guard let self else { return }
+            self.engine.newTable()
+            self.stats = nil
+            self.advice = nil
+            self.equityHistory = []
+            self.lastStatsKey = ""
+            self.session = SessionStats()
+            self.bumpSessions()
+        }
     }
 
     // MARK: - Bet sizing for the controls
