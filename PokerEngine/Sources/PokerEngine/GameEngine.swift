@@ -167,6 +167,20 @@ public final class GameEngine {
         return RangeConstraint(minChen: minChen)
     }
 
+    /// Hero's position this hand. Pure mapping exposed for testability.
+    nonisolated static func position(forSeat seat: Int, dealer: Int, count: Int) -> Position {
+        switch (seat - dealer + count) % count {
+        case 0: return .button
+        case 1: return .smallBlind
+        case 2: return .bigBlind
+        default: return .early
+        }
+    }
+
+    public var heroPosition: Position {
+        GameEngine.position(forSeat: 0, dealer: dealerIndex, count: players.count)
+    }
+
     public var hero: Player { players[0] }
 
     public var totalPot: Int { players.reduce(0) { $0 + $1.totalBet } }
