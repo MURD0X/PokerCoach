@@ -18,21 +18,66 @@ public struct CoachAdvice: Sendable {
     }
 }
 
+/// Where the hero sits relative to the button — the second input (after the
+/// cards) to every preflop decision.
+public enum Position: String, Sendable, CaseIterable {
+    case early = "under the gun"
+    case smallBlind = "in the small blind"
+    case bigBlind = "in the big blind"
+    case button = "on the button"
+
+    /// Chen-point handicap: positive = play tighter, negative = looser.
+    var chenHandicap: Double {
+        switch self {
+        case .early: return 1.0
+        case .smallBlind: return 0.5
+        case .bigBlind: return 0
+        case .button: return -1.5
+        }
+    }
+
+    var teachingNote: String {
+        switch self {
+        case .early: return "first to act, with three players behind you — play tighter"
+        case .smallBlind: return "you'll act first on every street after the flop — be selective"
+        case .bigBlind: return "you've already paid the blind, so free checks are a gift"
+        case .button: return "last to act on every street — you can profitably play more hands"
+        }
+    }
+}
+
 public enum Coach {
-    public static func preflopAdvice(hole: [Card], toCall: Int, bigBlind: Int) -> CoachAdvice {
+    // Tier of a hand at a position: 3 premium, 2 strong, 1 playable, 0 weak.
+    static func preflopTier(score: Int, position: Position) -> Int {
+        let effective = Double(score) - position.chenHandicap
+        if effective >= 10 { return 3 }
+        if effective >= 8 { return 2 }
+        if effective >= 6 { return 1 }
+        return 0
+    }
+
+    public static func preflopAdvice(hole: [Card], toCall: Int, bigBlind: Int, position: Position) -> CoachAdvice {
         let score = Chen.score(hole)
         var lines = [
             "You hold \(Chen.describe(hole)).",
             "Starting-hand strength: \(score) points on the Chen scale (best hands score ~20, playable hands ~7+).",
+            "Position: \(position.rawValue) — \(position.teachingNote).",
         ]
+        let tier = preflopTier(score: score, position: position)
+        let buttonTier = preflopTier(score: score, position: .button)
+        if position != .button, buttonTier > tier, tier == 0 {
+            lines.append("On the button this hand would be worth playing — from here it isn't. That gap is what position means.")
+        } else if position == .button, tier > preflopTier(score: score, position: .early) {
+            lines.append("This hand plays here precisely because you're on the button — up front it would be a fold.")
+        }
         let action: CoachAction
-        if score >= 10 {
+        if tier >= 3 {
             action = .raise
             lines.append("This is a premium hand. Raising builds the pot while you are likely ahead, and thins the field so fewer opponents can outdraw you.")
-        } else if score >= 8 {
+        } else if tier == 2 {
             action = toCall > 3 * bigBlind ? .call : .raise
             lines.append("A strong hand — play it aggressively, but be careful if someone re-raises big.")
-        } else if score >= 6 {
+        } else if tier == 1 {
             if toCall == 0 {
                 action = .check
                 lines.append("A playable hand. Since checking is free, see the flop and re-evaluate.")

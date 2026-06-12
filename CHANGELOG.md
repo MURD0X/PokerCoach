@@ -7,6 +7,10 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Changed
+- The coach now plays position: preflop thresholds tighten under the gun
+  and loosen on the button, every preflop advice names your position and
+  why it matters, and marginal hands get the explicit lesson ("on the
+  button this hand would be worth playing — from here it isn't").
 - Win probability is now range-aware: opponents' simulated hands respect
   what their actions say — a preflop raiser is sampled from strong hands
   (sharper still once you've revealed they're tight), a caller from

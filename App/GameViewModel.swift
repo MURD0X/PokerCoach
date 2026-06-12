@@ -282,7 +282,7 @@ final class GameViewModel: ObservableObject {
         let opponents = engine.activeOpponentCount
 
         if board.isEmpty {
-            advice = Coach.preflopAdvice(hole: hole, toCall: toCall, bigBlind: GameEngine.bigBlind)
+            advice = Coach.preflopAdvice(hole: hole, toCall: toCall, bigBlind: GameEngine.bigBlind, position: engine.heroPosition)
             return
         }
         let constraints = engine.observedConstraints()
