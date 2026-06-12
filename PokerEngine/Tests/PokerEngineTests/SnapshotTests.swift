@@ -32,7 +32,10 @@ final class TableSnapshotTests: XCTestCase {
         XCTAssertEqual(restored.players[1].personality, engine.players[1].personality)
         // Reveal evidence survives: 10 hands seen means tightness is known.
         XCTAssertEqual(restored.styleReveal(for: 1).tightness, "Tight")
-        // The restored table plays on.
+        // The restored table plays on. (Top up first: if the hero happened
+        // to bust on the last looped hand, the restored engine correctly
+        // refuses to deal — that's the app's bust-sheet path, not a bug.)
+        topUpAllStacks(restored)
         let before = restored.handNumber
         await restored.playHand()
         XCTAssertEqual(restored.handNumber, before + 1)
