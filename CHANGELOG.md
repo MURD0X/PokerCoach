@@ -7,6 +7,12 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Bankroll: a persistent 10,000-chip bankroll behind your table money.
+  Sitting at a table costs a 1,000 buy-in; leaving returns your stack;
+  busting returns nothing — and you can now buy back in at the same table
+  (same opponents, your reads intact). If the bankroll can't cover a seat,
+  that's total ruin: a "Bankroll gone" moment with lifetime stats and a
+  fresh start.
 - Going broke now ends the session with an "Out of chips" recap — hands
   played, biggest pot won, and how often you followed the coach's advice —
   and a Take a New Seat button that seats you at a fresh table. Coach
