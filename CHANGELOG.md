@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-06-11
+
 ### Added
 - Settings (gear icon in the toolbar): opponent speed — Fast (current
   pace), Medium, or Slow — persisted across launches and applied
@@ -100,7 +102,8 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/MURD0X/PokerCoach/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/MURD0X/PokerCoach/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/MURD0X/PokerCoach/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/MURD0X/PokerCoach/compare/v1.1.2...v1.2.0
