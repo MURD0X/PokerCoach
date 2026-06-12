@@ -7,6 +7,12 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Post-hand coach review: the hand result now grades every decision you
+  made — matched the coach (with the equity that justified it), defensible
+  deviation, or a leak ("put chips in with 18% needing 29% — this is the
+  call that costs money long-term"). The hand's worst leak is highlighted
+  as the lesson of the hand. Graded only on what was knowable at the
+  moment — never on hindsight about opponents' cards.
 - Cash Out & Leave: an explicit way to walk away — bank your stack, see a
   session recap ("You leave with 1,450 — up 450"), and stay unseated until
   you choose your next table. Available next to Deal Hand between hands and

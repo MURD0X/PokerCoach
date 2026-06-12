@@ -90,7 +90,8 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showResultDetails) {
                 if let result = model.engine.lastResult {
-                    ResultDetailSheet(result: result, equityHistory: model.equityHistory)
+                    ResultDetailSheet(result: result, equityHistory: model.equityHistory,
+                                      decisions: model.handDecisions)
                 }
             }
             .sheet(isPresented: $showLog) {
