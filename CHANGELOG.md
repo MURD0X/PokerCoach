@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-06-12
+
 ### Fixed
 - The bankroll is prominently visible again: it moved from the crowded
   title bar into its own strip above the table (tap for history; the hand
@@ -212,7 +214,8 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/MURD0X/PokerCoach/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/MURD0X/PokerCoach/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/MURD0X/PokerCoach/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/MURD0X/PokerCoach/compare/v1.5.0...v1.6.0
