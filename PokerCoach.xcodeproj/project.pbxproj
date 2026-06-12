@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		01251B0FD76E0F7BA979EBAF /* win-chime.wav in Resources */ = {isa = PBXBuildFile; fileRef = 37DEF3E034B84EB17E16C0B3 /* win-chime.wav */; };
 		04B816A6DC5E49AACB36F102 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 408118F1DFFC624C71A8CFBF /* SoundManager.swift */; };
+		093043BDB01932F4A9FBE353 /* SessionHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C5F6F624BE0E41B19DC00EE /* SessionHistory.swift */; };
 		0E2A559C0125DFFBD04B5806 /* PokerEngine in Frameworks */ = {isa = PBXBuildFile; productRef = D04CA99D8EFE986F13E6B625 /* PokerEngine */; };
 		2A32EC575482D191316C96FC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C52D30E015B07FB67CA71085 /* ContentView.swift */; };
 		33CD6208C1695E960FE8DE0F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E38AE295DC15C37837561C64 /* Assets.xcassets */; };
@@ -20,6 +21,7 @@
 		6DB739E7D7EB8ABC8CE3B728 /* chip-clink.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3925FBE5E3886DD4AABB49AE /* chip-clink.wav */; };
 		6EE55F94F73981FC17C63E83 /* TableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9728FE05D561D9DA3C1A2B9C /* TableView.swift */; };
 		7D7C2C5FCC2079274884C4DF /* ControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 180FEF3C6CE85924D840BD60 /* ControlsView.swift */; };
+		7F9125C548094E5FFB3F6772 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F511F415CE68CF39F0C69F74 /* HistoryView.swift */; };
 		83C6CFAA3B83DEC80DAA8443 /* card-deal.wav in Resources */ = {isa = PBXBuildFile; fileRef = 5A4D53E59015A3F3DAC14F24 /* card-deal.wav */; };
 		9349AD8DAA1392390792BA65 /* TablePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1834E2D14045043E2A1A5F00 /* TablePickerView.swift */; };
 		98278DAEF3CAA4DAFE5E5416 /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB725B35DC806F8FF4C84F0A /* GameViewModel.swift */; };
@@ -41,6 +43,7 @@
 		3C6EC32705BD6CE2CD2951A4 /* LessonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonsView.swift; sourceTree = "<group>"; };
 		408118F1DFFC624C71A8CFBF /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultBannerView.swift; sourceTree = "<group>"; };
+		4C5F6F624BE0E41B19DC00EE /* SessionHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistory.swift; sourceTree = "<group>"; };
 		5A4D53E59015A3F3DAC14F24 /* card-deal.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "card-deal.wav"; sourceTree = "<group>"; };
 		702E372D6D3213428789FDA4 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		9728FE05D561D9DA3C1A2B9C /* TableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView.swift; sourceTree = "<group>"; };
@@ -53,6 +56,7 @@
 		E38AE295DC15C37837561C64 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EB725B35DC806F8FF4C84F0A /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
 		EDE9E759B832FE5194B4C3D7 /* PokerEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = PokerEngine; path = PokerEngine; sourceTree = SOURCE_ROOT; };
+		F511F415CE68CF39F0C69F74 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +78,7 @@
 				B2E2DC9BFC0C3C0EAAE479B2 /* CardView.swift */,
 				A542BBE090D1D1609CFB4A89 /* CoachBarView.swift */,
 				180FEF3C6CE85924D840BD60 /* ControlsView.swift */,
+				F511F415CE68CF39F0C69F74 /* HistoryView.swift */,
 				3C6EC32705BD6CE2CD2951A4 /* LessonsView.swift */,
 				702E372D6D3213428789FDA4 /* LogView.swift */,
 				45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */,
@@ -102,6 +107,7 @@
 				C52D30E015B07FB67CA71085 /* ContentView.swift */,
 				EB725B35DC806F8FF4C84F0A /* GameViewModel.swift */,
 				CE6EADD7BE62F6A280838F0E /* PokerCoachApp.swift */,
+				4C5F6F624BE0E41B19DC00EE /* SessionHistory.swift */,
 				408118F1DFFC624C71A8CFBF /* SoundManager.swift */,
 				C7C4AB63B661BDB3BA46DE01 /* Resources */,
 				0A49258208A59158C8FEC383 /* Views */,
@@ -228,11 +234,13 @@
 				2A32EC575482D191316C96FC /* ContentView.swift in Sources */,
 				7D7C2C5FCC2079274884C4DF /* ControlsView.swift in Sources */,
 				98278DAEF3CAA4DAFE5E5416 /* GameViewModel.swift in Sources */,
+				7F9125C548094E5FFB3F6772 /* HistoryView.swift in Sources */,
 				E5A9EBC758E9B75BF41FA149 /* LessonsView.swift in Sources */,
 				9B94EE156CC25CC07366164F /* LogView.swift in Sources */,
 				683DA86231180A71954CCE87 /* PokerCoachApp.swift in Sources */,
 				41F3768EE2AE2395A5F54BF6 /* ResultBannerView.swift in Sources */,
 				50595DBB9216146C2E0694B5 /* RuinSheetView.swift in Sources */,
+				093043BDB01932F4A9FBE353 /* SessionHistory.swift in Sources */,
 				E36093F6190BFF80521FCB9E /* SettingsView.swift in Sources */,
 				04B816A6DC5E49AACB36F102 /* SoundManager.swift in Sources */,
 				5CFE0B3C27D2112EC556BBD8 /* StatsDashboardView.swift in Sources */,

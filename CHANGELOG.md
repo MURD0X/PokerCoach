@@ -7,6 +7,11 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Bankroll history: tap the bankroll in the header for the long-term view —
+  a chart of your bankroll after every session, lifetime net and win rate,
+  total hands, average coach adherence, and a ledger of recent sessions
+  with per-session results. Sessions record automatically when you leave a
+  table, bust out, or even if the app is killed mid-game.
 - Table stakes: choose your game — blinds of 5/10, 10/20, or 25/50 with
   50-big-blind buy-ins (500 / 1,000 / 2,500). The table picker shows what
   each seat costs as a percentage of your bankroll, color-coded against the

@@ -100,6 +100,7 @@ construction, and 25 end-to-end simulated hands asserting chip conservation.
 | `-showbust` | Opens the out-of-chips sheet with sample stats (UI verification) |
 | `-showruin` | Opens the bankroll-gone sheet (UI verification) |
 | `-showpicker` | Opens the table picker sheet (UI verification) |
+| `-demohistory` | Seeds sample sessions and opens bankroll history (UI verification) |
 
 ## Distribution
 
