@@ -39,6 +39,13 @@ struct LessonsView: View {
                     lesson("Rule of 4 and 2", "Multiply your outs by 4 on the flop, or 2 on the turn, to estimate your % chance of improving by the river.")
                 }
 
+                Section("The Chen scale — rating your starting hand") {
+                    lesson("What it is", "A point system created by professional player Bill Chen for judging your two hole cards before the flop. The coach quotes it on every preflop decision.")
+                    lesson("How to score a hand", "Highest card: Ace = 10, King = 8, Queen = 7, Jack = 6; lower cards count half their number (a 9 is 4½). A pair doubles its card's points (minimum 5). Both cards the same suit: +2. Gaps between cards cost points: one gap −1, two −2, three −4, wider −5. Connected low cards (gap of 0–1, below a Queen) earn +1 for straight potential. Round halves up.")
+                    lesson("Worked examples", "A♠ A♥ = 20 (ace's 10, doubled — the best). A♠ K♠ = 12 (10, +2 suited). J♣ 10♣ = 9 (6, +2 suited, +1 connector). 7♦ 2♣ = −1 — famously the worst hand in poker.")
+                    lesson("How the coach uses it", "10+ points: premium — raise. 8–9: strong — raise, or call a big re-raise. 6–7: playable — worth a cheap look at the flop. Below 6: fold to any bet; checking is always fine when it's free.")
+                }
+
                 Section("Fair dealing in this app") {
                     lesson("Cryptographic shuffle", "Every hand uses a fresh 52-card deck shuffled with Fisher-Yates driven by the system's cryptographic random number generator — every deck order is equally likely.")
                     lesson("No peeking", "The AI opponents decide using only their own cards and the board, exactly like human players. Bad beats here are real poker variance, not a rigged deck.")

@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Lessons: a "Chen scale" section explaining the preflop point system the
+  coach quotes — scoring rules, worked examples (AA=20, AKs=12, 72o=−1),
+  and the thresholds behind the coach's preflop advice.
+
 ## [1.2.2] - 2026-06-11
 
 ### Fixed
