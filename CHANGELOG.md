@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Win probability is now range-aware: opponents' simulated hands respect
+  what their actions say — a preflop raiser is sampled from strong hands
+  (sharper still once you've revealed they're tight), a caller from
+  playable ones, with a bluff allowance so nothing is impossible. Your
+  displayed win % now honestly drops when a tight player wakes up with a
+  raise. The coach decides on the same honest numbers.
+
 ## [1.4.0] - 2026-06-11
 
 ### Added

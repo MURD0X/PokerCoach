@@ -14,6 +14,12 @@ public struct LogEntry: Identifiable, Sendable {
     public let kind: LogKind
 }
 
+/// What a player did before the flop — the public information that
+/// constrains what they're likely holding.
+public enum PreflopAction: String, Sendable {
+    case none, checked, called, raised
+}
+
 public enum HeroAction: Sendable {
     case fold
     case checkCall
@@ -33,6 +39,7 @@ public struct Player: Identifiable, Sendable {
     public var totalBet = 0
     public var hasActed = false
     public var lastAction = ""
+    public var preflopAction: PreflopAction = .none
     // Observation counters that drive the gradual style reveal.
     public var handsSeen = 0
     public var observedActions = 0
@@ -134,6 +141,32 @@ public final class GameEngine {
         )
     }
 
+    /// Knowledge-fair range constraints for the live opponents, in seat
+    /// order: built only from public information — each opponent's preflop
+    /// action this hand, sharpened by their *revealed* tightness (never the
+    /// hidden personality). Feed these to Equity.estimate so the hero's
+    /// win%% respects what opponents have told the table.
+    public func observedConstraints() -> [RangeConstraint] {
+        players.dropFirst().filter { !$0.folded }.map { p in
+            GameEngine.constraint(for: p.preflopAction, revealedTightness: styleReveal(for: p.id).tightness)
+        }
+    }
+
+    nonisolated static func constraint(for action: PreflopAction, revealedTightness: String?) -> RangeConstraint {
+        var minChen: Int?
+        switch action {
+        case .raised: minChen = 8
+        case .called: minChen = 5
+        case .checked, .none: minChen = nil
+        }
+        if var floor = minChen {
+            if revealedTightness == "Tight" { floor += 1 }
+            if revealedTightness == "Loose" { floor -= 2 }
+            minChen = floor
+        }
+        return RangeConstraint(minChen: minChen)
+    }
+
     public var hero: Player { players[0] }
 
     public var totalPot: Int { players.reduce(0) { $0 + $1.totalBet } }
@@ -201,6 +234,7 @@ public final class GameEngine {
             players[i].totalBet = 0
             players[i].hasActed = false
             players[i].lastAction = ""
+            players[i].preflopAction = .none
             players[i].handsSeen += 1
         }
 
@@ -350,6 +384,16 @@ public final class GameEngine {
         let toCall = currentBet - players[index].betThisRound
         players[index].hasActed = true
         if !players[index].isHero { players[index].observedActions += 1 }
+        if stage == .preflop {
+            switch action {
+            case .raise: players[index].preflopAction = .raised
+            case .checkCall where toCall > 0:
+                if players[index].preflopAction != .raised { players[index].preflopAction = .called }
+            case .checkCall:
+                if players[index].preflopAction == .none { players[index].preflopAction = .checked }
+            case .fold: break
+            }
+        }
         let name = players[index].name
 
         switch action {
