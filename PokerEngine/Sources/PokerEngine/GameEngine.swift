@@ -155,7 +155,17 @@ public final class GameEngine {
 
     private func notify() { onChange?() }
 
+    /// Test hook: force a stack value to exercise bust paths quickly.
+    func setStackForTesting(_ amount: Int, seat: Int) {
+        players[seat].stack = amount
+    }
+
+    /// True when the hero has no chips left — the session is over and the
+    /// engine will refuse to deal until a new table is seated.
+    public var heroBusted: Bool { players[0].stack == 0 }
+
     public func playHand() async {
+        guard !heroBusted else { return }
         handNumber += 1
         board = []
         deck = Deck.shuffled()
@@ -164,9 +174,14 @@ public final class GameEngine {
         lastResult = nil
 
         for i in players.indices {
-            if players[i].stack == 0 { // rebuy so the lesson continues
-                players[i].stack = GameEngine.startingStack
-                emit("\(players[i].name) rebuys for \(GameEngine.startingStack) chips.", .info)
+            if players[i].stack == 0 { // busted opponents leave; someone new sits down
+                let departing = players[i].name
+                let exclude = Set(players.map(\.name))
+                let arrival = OpponentFactory.randomLineup(count: 1, excluding: exclude)[0]
+                var seat = Player(id: players[i].id, name: arrival.name, isHero: false, stack: GameEngine.startingStack)
+                seat.personality = arrival.personality
+                players[i] = seat
+                emit("\(departing) busts and leaves the table. \(arrival.name) takes the seat.", .info)
             }
             players[i].hole = [deck.removeLast(), deck.removeLast()]
             players[i].folded = false

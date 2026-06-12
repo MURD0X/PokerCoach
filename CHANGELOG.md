@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Busting now matters: opponents who lose their stack leave the table and a
+  new random player takes the seat (with a fresh hidden personality — your
+  read on the old player goes with them). The engine refuses to deal while
+  you have no chips; going broke ends the session.
+
 ## [1.3.0] - 2026-06-11
 
 ### Added
