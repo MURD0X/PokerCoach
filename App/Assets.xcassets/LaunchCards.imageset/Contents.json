@@ -1,0 +1,12 @@
+{
+  "images": [
+    {
+      "filename": "launch-cards.png",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

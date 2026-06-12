@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- A front page: the app now opens to a branded home screen — bankroll up
+  top, a Continue Session card showing your waiting table (opponents,
+  blinds, stack), Take a Seat when you're between tables, and doors to
+  Drills, Lessons, History, and Settings. The table is now a screen you
+  enter; going back never cashes you out.
+- A matching launch screen (felt + the fanned cards from the icon), so
+  opening the app feels like one continuous moment.
+
 ## [1.9.0] - 2026-06-12
 
 ### Fixed
