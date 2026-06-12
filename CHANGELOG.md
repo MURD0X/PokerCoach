@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Table stakes: choose your game — blinds of 5/10, 10/20, or 25/50 with
+  50-big-blind buy-ins (500 / 1,000 / 2,500). The table picker shows what
+  each seat costs as a percentage of your bankroll, color-coded against the
+  classic ≤10% guideline. Your stakes choice persists, and busting offers
+  the chance to move down in stakes — like a disciplined player should.
+
 ### Fixed
 - Hand log grammar: your own actions read in the second person — "You have
   the dealer button", "You call 20", "You win the pot" — instead of "You

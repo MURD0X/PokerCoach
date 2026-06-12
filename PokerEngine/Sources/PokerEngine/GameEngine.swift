@@ -66,9 +66,12 @@ public struct StyleReveal: Sendable {
 /// `onChange`, requests the hero's decision via `heroActionProvider`.
 @MainActor
 public final class GameEngine {
-    public nonisolated static let smallBlind = 10
-    public nonisolated static let bigBlind = 20
-    public nonisolated static let startingStack = 1000
+    // Default (standard-stakes) values; instance play uses `stakes`.
+    public nonisolated static let smallBlind = TableStakes.standard.smallBlind
+    public nonisolated static let bigBlind = TableStakes.standard.bigBlind
+    public nonisolated static let startingStack = TableStakes.standard.buyIn
+
+    public private(set) var stakes: TableStakes
 
     public private(set) var players: [Player]
     public private(set) var board: [Card] = []
@@ -90,15 +93,20 @@ public final class GameEngine {
     private var deck: [Card] = []
     private var logCounter = 0
 
-    public init(opponents: [(name: String, personality: Personality)] = OpponentFactory.randomLineup(count: 3)) {
-        players = GameEngine.lineup(opponents: opponents)
+    public init(
+        stakes: TableStakes = .standard,
+        opponents: [(name: String, personality: Personality)] = OpponentFactory.randomLineup(count: 3)
+    ) {
+        self.stakes = stakes
+        players = GameEngine.lineup(opponents: opponents, buyIn: stakes.buyIn)
         dealerIndex = Int.random(in: 0..<players.count)
+        minRaise = stakes.bigBlind
     }
 
-    private nonisolated static func lineup(opponents: [(name: String, personality: Personality)]) -> [Player] {
-        var all = [Player(id: 0, name: "You", isHero: true, stack: GameEngine.startingStack)]
+    private nonisolated static func lineup(opponents: [(name: String, personality: Personality)], buyIn: Int) -> [Player] {
+        var all = [Player(id: 0, name: "You", isHero: true, stack: buyIn)]
         for (i, opp) in opponents.enumerated() {
-            var p = Player(id: i + 1, name: opp.name, isHero: false, stack: GameEngine.startingStack)
+            var p = Player(id: i + 1, name: opp.name, isHero: false, stack: buyIn)
             p.personality = opp.personality
             all.append(p)
         }
@@ -108,16 +116,17 @@ public final class GameEngine {
     /// Replace the opposition with fresh random players and reset the table.
     /// Random re-rolls never repeat a current opponent's name, so the new
     /// table is visibly different. No-op while a hand is in progress.
-    public func newTable(opponents: [(name: String, personality: Personality)]? = nil) {
+    public func newTable(stakes newStakes: TableStakes? = nil, opponents: [(name: String, personality: Personality)]? = nil) {
         guard stage == .idle || stage == .done else { return }
+        if let newStakes { stakes = newStakes }
         let currentNames = Set(players.dropFirst().map(\.name))
         let next = opponents ?? OpponentFactory.randomLineup(count: 3, excluding: currentNames)
-        players = GameEngine.lineup(opponents: next)
+        players = GameEngine.lineup(opponents: next, buyIn: stakes.buyIn)
         dealerIndex = Int.random(in: 0..<players.count)
         board = []
         stage = .idle
         currentBet = 0
-        minRaise = GameEngine.bigBlind
+        minRaise = stakes.bigBlind
         handNumber = 0
         log = []
         logCounter = 0
@@ -223,8 +232,8 @@ public final class GameEngine {
     /// bankroll before calling.
     public func rebuyHero() {
         guard heroBusted, stage == .idle || stage == .done else { return }
-        players[0].stack = GameEngine.startingStack
-        emit("You buy back in for \(GameEngine.startingStack) chips.", .info)
+        players[0].stack = stakes.buyIn
+        emit("You buy back in for \(stakes.buyIn) chips.", .info)
         notify()
     }
 
@@ -234,7 +243,7 @@ public final class GameEngine {
         board = []
         deck = Deck.shuffled()
         currentBet = 0
-        minRaise = GameEngine.bigBlind
+        minRaise = stakes.bigBlind
         lastResult = nil
 
         for i in players.indices {
@@ -242,7 +251,7 @@ public final class GameEngine {
                 let departing = players[i].name
                 let exclude = Set(players.map(\.name))
                 let arrival = OpponentFactory.randomLineup(count: 1, excluding: exclude)[0]
-                var seat = Player(id: players[i].id, name: arrival.name, isHero: false, stack: GameEngine.startingStack)
+                var seat = Player(id: players[i].id, name: arrival.name, isHero: false, stack: stakes.buyIn)
                 seat.personality = arrival.personality
                 players[i] = seat
                 emit("\(departing) busts and leaves the table. \(arrival.name) takes the seat.", .info)
@@ -263,12 +272,12 @@ public final class GameEngine {
         let bb = (dealerIndex + 2) % players.count
 
         emit("— Hand #\(handNumber) — \(players[dealerIndex].name) \(players[dealerIndex].isHero ? "have" : "has") the dealer button.", .header)
-        pay(sb, GameEngine.smallBlind)
-        players[sb].lastAction = "SB \(GameEngine.smallBlind)"
-        pay(bb, GameEngine.bigBlind)
-        players[bb].lastAction = "BB \(GameEngine.bigBlind)"
-        currentBet = GameEngine.bigBlind
-        emit("\(players[sb].name) \(verb(sb, "post")) small blind \(GameEngine.smallBlind), \(players[bb].name) \(verb(bb, "post")) big blind \(GameEngine.bigBlind).")
+        pay(sb, stakes.smallBlind)
+        players[sb].lastAction = "SB \(stakes.smallBlind)"
+        pay(bb, stakes.bigBlind)
+        players[bb].lastAction = "BB \(stakes.bigBlind)"
+        currentBet = stakes.bigBlind
+        emit("\(players[sb].name) \(verb(sb, "post")) small blind \(stakes.smallBlind), \(players[bb].name) \(verb(bb, "post")) big blind \(stakes.bigBlind).")
 
         let streets: [(Stage, Int, Int)] = [
             (.preflop, 0, (bb + 1) % players.count),
@@ -284,7 +293,7 @@ public final class GameEngine {
                 for _ in 0..<dealCount { board.append(deck.removeLast()) }
                 emit("\(street.rawValue.capitalized): \(board.map(\.text).joined(separator: " "))", .street)
                 currentBet = 0
-                minRaise = GameEngine.bigBlind
+                minRaise = stakes.bigBlind
                 for i in players.indices {
                     players[i].betThisRound = 0
                     players[i].hasActed = false
@@ -376,10 +385,10 @@ public final class GameEngine {
                 if toCall > p.stack / 3 && score < 12 { return .checkCall }
                 return chance(pers.raiseWithStrengthRate) || toCall == 0 ? raiseSized() : .checkCall
             }
-            if score >= pers.preflopCallThreshold && toCall <= 3 * GameEngine.bigBlind {
+            if score >= pers.preflopCallThreshold && toCall <= 3 * stakes.bigBlind {
                 return .checkCall
             }
-            if chance(pers.speculativeCallRate) && toCall <= 2 * GameEngine.bigBlind { return .checkCall }
+            if chance(pers.speculativeCallRate) && toCall <= 2 * stakes.bigBlind { return .checkCall }
             return toCall == 0 ? .checkCall : .fold
         }
 

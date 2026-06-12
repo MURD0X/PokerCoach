@@ -18,6 +18,7 @@ struct AnyButtonStyle: PrimitiveButtonStyle {
 struct BustSheetView: View {
     let stats: SessionStats
     let bankrollBalance: Int
+    let buyIn: Int
     let canBuyBack: Bool
     let onBuyBack: () -> Void
     let onNewTable: () -> Void
@@ -48,7 +49,7 @@ struct BustSheetView: View {
             VStack(spacing: 8) {
                 if canBuyBack {
                     Button(action: onBuyBack) {
-                        Label("Buy Back In (−\(BankrollLedger.buyIn))", systemImage: "arrow.counterclockwise")
+                        Label("Buy Back In (−\(buyIn))", systemImage: "arrow.counterclockwise")
                             .font(.system(.body, design: .rounded, weight: .bold))
                             .frame(maxWidth: .infinity)
                     }
@@ -57,7 +58,7 @@ struct BustSheetView: View {
                     .controlSize(.large)
                 }
                 Button(action: onNewTable) {
-                    Label(canBuyBack ? "Leave — Find a New Table" : "Find a New Table (−\(BankrollLedger.buyIn))", systemImage: "chair")
+                    Label(canBuyBack ? "Leave — Find a New Table" : "Find a New Table", systemImage: "chair")
                         .font(.system(.body, design: .rounded, weight: canBuyBack ? .semibold : .bold))
                         .frame(maxWidth: .infinity)
                 }
