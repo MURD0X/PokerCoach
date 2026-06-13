@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-06-12
+
 ### Added
 - Lessons 2.0, part 2 — interactive widgets: a Chen calculator (pick any
   two cards, watch the score build step by step), a pot-odds playground
@@ -236,7 +238,8 @@ All notable changes to this project are documented here. The format follows
 - Debug launch arguments `-autodeal` and `-autopilot` for automated UI
   verification.
 
-[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/MURD0X/PokerCoach/compare/v1.10.0...HEAD
+[1.10.0]: https://github.com/MURD0X/PokerCoach/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/MURD0X/PokerCoach/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/MURD0X/PokerCoach/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/MURD0X/PokerCoach/compare/v1.6.0...v1.7.0
