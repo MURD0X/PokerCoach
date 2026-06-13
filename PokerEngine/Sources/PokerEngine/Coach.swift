@@ -1,5 +1,28 @@
 import Foundation
 
+/// Stable identifiers for lesson topics, so coach output can deep-link
+/// into the lesson that explains the concept it just used.
+public enum LessonTopic: String, Sendable, CaseIterable, Identifiable {
+    case gameFlow, handRankings, chen, position, potOdds, outs
+    case readingPlayers, bankroll, fairness
+
+    public var id: String { rawValue }
+
+    public var title: String {
+        switch self {
+        case .gameFlow: return "How a Hand Works"
+        case .handRankings: return "Hand Rankings"
+        case .chen: return "The Chen Scale"
+        case .position: return "Position"
+        case .potOdds: return "Pot Odds & Equity"
+        case .outs: return "Counting Outs"
+        case .readingPlayers: return "Reading Players"
+        case .bankroll: return "Bankroll Management"
+        case .fairness: return "Fair Dealing"
+        }
+    }
+}
+
 public enum CoachAction: String, Sendable {
     case fold = "FOLD"
     case check = "CHECK"
@@ -15,14 +38,19 @@ public struct CoachAdvice: Sendable {
     public let equity: Double?
     public let potOddsNeeded: Double?
     public let chenScore: Int?
+    /// The lesson topics this advice draws on — UI renders them as
+    /// "learn more" links.
+    public let topics: [LessonTopic]
 
     public init(action: CoachAction, lines: [String],
-                equity: Double? = nil, potOddsNeeded: Double? = nil, chenScore: Int? = nil) {
+                equity: Double? = nil, potOddsNeeded: Double? = nil, chenScore: Int? = nil,
+                topics: [LessonTopic] = []) {
         self.action = action
         self.lines = lines
         self.equity = equity
         self.potOddsNeeded = potOddsNeeded
         self.chenScore = chenScore
+        self.topics = topics
     }
 }
 
@@ -105,7 +133,7 @@ public enum Coach {
                 lines.append("A weak starting hand. Most beginner losses come from playing too many hands — folding here is the disciplined play.")
             }
         }
-        return CoachAdvice(action: action, lines: lines, chenScore: score)
+        return CoachAdvice(action: action, lines: lines, chenScore: score, topics: [.chen, .position])
     }
 
     public static func postflopAdvice(
@@ -152,6 +180,8 @@ public enum Coach {
                 lines.append("Your hand is not strong enough to bet for value. Check and see a free card.")
             }
         }
-        return CoachAdvice(action: action, lines: lines, equity: eq, potOddsNeeded: neededPct)
+        var topics: [LessonTopic] = [.potOdds]
+        if !outs.isEmpty && board.count < 5 { topics.append(.outs) }
+        return CoachAdvice(action: action, lines: lines, equity: eq, potOddsNeeded: neededPct, topics: topics)
     }
 }
