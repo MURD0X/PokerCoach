@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- New dark-premium visual identity: a gold poker-chip app icon, a matching
+  navy launch screen with the chip mark, and a full re-skin — navy felt
+  with a brushed-gold rail, gold dealer button, reveal pips, door icons,
+  and the Copperplate wordmark in gold. Semantic colors (fold/call/raise,
+  win/tie, verdicts) stay vivid for readability. Centralized in Theme.swift.
+
 ### Fixed
 - Version metadata: TestFlight builds were all uploading as 1.0(1) because
   the switch to an explicit Info.plist (for the launch screen) dropped the

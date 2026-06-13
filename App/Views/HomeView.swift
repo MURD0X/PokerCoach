@@ -46,7 +46,7 @@ struct HomeView: View {
             .padding(.top, 26)
             Text("Poker Coach")
                 .font(.custom("Copperplate", size: 34))
-                .foregroundStyle(.white)
+                .foregroundStyle(Theme.goldLight)
             Text("LEARN TEXAS HOLD'EM AT A FAIR TABLE")
                 .font(.custom("Copperplate-Light", size: 12))
                 .kerning(1.2)
@@ -56,10 +56,7 @@ struct HomeView: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 24)
-                .fill(RadialGradient(
-                    colors: [Color(red: 0.16, green: 0.42, blue: 0.31), Color(red: 0.07, green: 0.23, blue: 0.17)],
-                    center: .center, startRadius: 40, endRadius: 320
-                ))
+.fill(Theme.brandGradient(radius: 320))
         )
         .padding(.top, 8)
     }
@@ -78,7 +75,7 @@ struct HomeView: View {
                 }
                 Spacer()
                 Image(systemName: "chart.line.uptrend.xyaxis")
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Theme.gold)
                 Image(systemName: "chevron.right")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
@@ -104,9 +101,9 @@ struct HomeView: View {
                 Spacer()
                 Image(systemName: "chevron.right")
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(Color(red: 0.16, green: 0.11, blue: 0.02))
             .padding(16)
-            .background(RoundedRectangle(cornerRadius: 18).fill(Color.green.gradient))
+            .background(RoundedRectangle(cornerRadius: 18).fill(Theme.goldGradient))
         }
         .buttonStyle(.plain)
     }
@@ -119,9 +116,9 @@ struct HomeView: View {
                 Spacer()
                 Image(systemName: "chevron.right")
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(Color(red: 0.16, green: 0.11, blue: 0.02))
             .padding(16)
-            .background(RoundedRectangle(cornerRadius: 18).fill(Color.green.gradient))
+            .background(RoundedRectangle(cornerRadius: 18).fill(Theme.goldGradient))
         }
         .buttonStyle(.plain)
     }
@@ -146,7 +143,7 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Image(systemName: icon)
                     .font(.title3)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Theme.gold)
                 Text(title)
                     .font(.system(.subheadline, design: .rounded, weight: .bold))
                 Text(subtitle)

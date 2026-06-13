@@ -93,10 +93,7 @@ struct DrillView: View {
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(RadialGradient(
-                    colors: [Color(red: 0.16, green: 0.42, blue: 0.31), Color(red: 0.10, green: 0.29, blue: 0.21)],
-                    center: .center, startRadius: 30, endRadius: 240
-                ))
+.fill(Theme.feltGradient(radius: 240))
         )
     }
 

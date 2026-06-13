@@ -112,15 +112,12 @@ struct TableView: View {
         .background(
             RoundedRectangle(cornerRadius: 32)
                 .fill(
-                    RadialGradient(
-                        colors: [Color(red: 0.16, green: 0.42, blue: 0.31), Color(red: 0.10, green: 0.29, blue: 0.21)],
-                        center: .center, startRadius: 40, endRadius: 360
-                    )
+Theme.feltGradient(radius: 360)
                 )
         )
         .overlay(
             RoundedRectangle(cornerRadius: 32)
-                .strokeBorder(Color(red: 0.30, green: 0.22, blue: 0.15), lineWidth: 5)
+                .strokeBorder(LinearGradient(colors: [Theme.railTop, Theme.railBottom], startPoint: .top, endPoint: .bottom), lineWidth: 5)
         )
         .animation(.spring(duration: 0.45), value: engine.board.count)
         .animation(.easeInOut(duration: 0.25), value: engine.actingIndex)
@@ -199,7 +196,7 @@ struct SeatView: View {
                         .font(.system(size: 10, weight: .bold, design: .rounded))
                         .foregroundStyle(.black)
                         .frame(width: 16, height: 16)
-                        .background(Circle().fill(Color(red: 0.95, green: 0.83, blue: 0.45)))
+                        .background(Circle().fill(Theme.gold))
                 }
             }
             Text("\(player.stack)")
@@ -213,7 +210,7 @@ struct SeatView: View {
                     ForEach(0..<3, id: \.self) { i in
                         Circle()
                             .fill(i < reveal.revealedCount
-                                  ? Color(red: 0.62, green: 0.89, blue: 0.75)
+                                  ? Theme.goldLight
                                   : Color.white.opacity(0.28))
                             .frame(width: 6, height: 6)
                     }
@@ -234,7 +231,7 @@ struct SeatView: View {
 
             Text(player.lastAction.isEmpty ? " " : player.lastAction)
                 .font(.system(.caption2, design: .rounded, weight: .semibold))
-                .foregroundStyle(Color(red: 0.95, green: 0.83, blue: 0.45))
+                .foregroundStyle(Theme.goldLight)
                 .lineLimit(1)
         }
         .padding(.vertical, 6)
