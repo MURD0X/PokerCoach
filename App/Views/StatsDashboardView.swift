@@ -12,13 +12,12 @@ struct StatsDashboardView: View {
     private static let outsPreviewCount = 6
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             if let stats = model.stats {
                 gaugesRow(stats)
                 if !stats.outs.isEmpty {
                     outsRow(stats)
                 }
-                potOddsRow(stats)
             } else {
                 ContentUnavailableView(
                     "Stats appear here",
@@ -28,7 +27,7 @@ struct StatsDashboardView: View {
                 .frame(maxWidth: .infinity)
             }
         }
-        .padding(14)
+        .padding(12)
         .background(RoundedRectangle(cornerRadius: 20).fill(Color(.secondarySystemGroupedBackground)))
         .onChange(of: model.engine.handNumber) { outsExpanded = false }
     }
@@ -125,34 +124,6 @@ struct StatsDashboardView: View {
             .minimumScaleFactor(0.7)
             .frame(minWidth: 34, minHeight: 26)
             .background(RoundedRectangle(cornerRadius: 6).fill(Color(.tertiarySystemGroupedBackground)))
-    }
-
-    @ViewBuilder
-    private func potOddsRow(_ stats: HandStats) -> some View {
-        let toCall = model.heroToCall
-        if model.isHeroTurn && toCall > 0 {
-            let pot = model.engine.totalPot
-            let needed = Double(toCall) / Double(pot + toCall)
-            let have = stats.equity.decisionEquity
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("POT ODDS").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
-                    Text("Call \(toCall) to win \(pot + toCall)")
-                        .font(.system(.footnote, design: .rounded))
-                }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("Need \(Int((needed * 100).rounded()))% · have \(Int((have * 100).rounded()))%")
-                        .font(.system(.footnote, design: .rounded, weight: .bold))
-                        .foregroundStyle(have > needed ? .green : .red)
-                    Text(have > needed ? "Profitable call" : "Unprofitable call")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(10)
-            .background(RoundedRectangle(cornerRadius: 10).fill(Color(.tertiarySystemGroupedBackground)))
-        }
     }
 
     private func winColor(_ value: Double) -> Color {

@@ -52,7 +52,7 @@ struct TableView: View {
     }
 
     var body: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 12) {
             HStack(alignment: .top, spacing: 10) {
                 ForEach(engine.players.dropFirst()) { player in
                     seatAnchored(player.id) { SeatView(
@@ -98,7 +98,7 @@ struct TableView: View {
                 winningCards: winningCards
             ) }
         }
-        .padding(.vertical, 22)
+        .padding(.vertical, 14)
         .padding(.horizontal, 14)
         .frame(maxWidth: .infinity)
         .background(
@@ -214,7 +214,7 @@ struct SeatView: View {
                 .foregroundStyle(Color(red: 0.95, green: 0.83, blue: 0.45))
                 .lineLimit(1)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
         .padding(.horizontal, 10)
         .background(
             RoundedRectangle(cornerRadius: 14)
