@@ -151,6 +151,8 @@ conservation.
 | `-demoleave` | Leaves the current table, showing the cash-out recap |
 | `-showdrills` | Opens drill mode on launch |
 | `-showdials` | Opens an opponent's dials popover |
+| `-tournament` | Starts a sit-n-go on launch (UI verification) |
+| `-tournamentresult` | Opens the sit-n-go standings sheet with sample results |
 | `-lessonTopic <id>` | Opens lessons at a topic, e.g. `-lessonTopic chen` |
 
 ## Engineering

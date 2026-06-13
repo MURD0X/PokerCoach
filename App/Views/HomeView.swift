@@ -12,16 +12,22 @@ struct HomeView: View {
     let onLessons: () -> Void
     let onHistory: () -> Void
     let onSettings: () -> Void
+    let onTournament: () -> Void
 
     var body: some View {
         ScrollView {
             VStack(spacing: 14) {
                 header
                 bankrollCard
-                if model.isSeated {
+                if model.inTournament {
+                    tournamentCard(continuing: true)
+                } else if model.isSeated {
                     continueCard
                 } else {
                     newTableCard
+                }
+                if !model.inTournament {
+                    tournamentCard(continuing: false)
                 }
                 doors
             }
@@ -119,6 +125,30 @@ struct HomeView: View {
             .foregroundStyle(Color(red: 0.16, green: 0.11, blue: 0.02))
             .padding(16)
             .background(RoundedRectangle(cornerRadius: 18).fill(Theme.goldGradient))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func tournamentCard(continuing: Bool) -> some View {
+        Button(action: onTournament) {
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Label(continuing ? "Continue Tournament" : "Sit & Go Tournament",
+                          systemImage: continuing ? "play.fill" : "trophy.fill")
+                        .font(.system(.headline, design: .rounded, weight: .bold))
+                    Text(continuing
+                         ? "Level \(model.tournament?.level ?? 1) · blinds \(model.tournament?.blinds.sb ?? 10)/\(model.tournament?.blinds.bb ?? 20)"
+                         : "4 players · top 2 paid · \(TournamentState.buyIn) buy-in")
+                        .font(.system(.caption, design: .rounded))
+                        .opacity(0.85)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+            }
+            .foregroundStyle(continuing ? .white : Theme.onFelt)
+            .padding(16)
+            .background(RoundedRectangle(cornerRadius: 18)
+                .fill(continuing ? AnyShapeStyle(Color.green.gradient) : AnyShapeStyle(Theme.brandGradient(radius: 200))))
         }
         .buttonStyle(.plain)
     }

@@ -27,6 +27,15 @@ struct DecisionRecord: Identifiable {
     let topics: [LessonTopic]
 }
 
+struct TournamentResult {
+    struct Standing: Identifiable { let place: Int; let name: String; let payout: Int; var id: Int { place } }
+    let standings: [Standing]
+    let heroPlace: Int
+    let heroPayout: Int
+    var heroWon: Bool { heroPlace == 1 }
+    var heroCashed: Bool { heroPayout > 0 }
+}
+
 struct ChipFlight: Identifiable, Equatable {
     let id = UUID()
     let seat: Int
@@ -79,6 +88,11 @@ final class GameViewModel: ObservableObject {
     @Published var showTablePicker = false
     @Published var leaveRecap: (stats: SessionStats, cashedOut: Int, net: Int)?
     @Published var handDecisions: [DecisionRecord] = []
+    @Published var tournament: TournamentState?
+    @Published var tournamentResult: TournamentResult?
+    private var eliminatedOrder: [String] = []
+
+    var inTournament: Bool { tournament != nil }
     private var sessionBuyInTotal = 0
     private var sessionStartDate = Date()
     private var pendingSeat: (() -> Void)?
@@ -261,6 +275,7 @@ final class GameViewModel: ObservableObject {
 
     func dealHand() {
         guard !isHandRunning else { return }
+        if inTournament { tournamentDealHand(); return }
         guard isSeated else {
             showTablePicker = true
             return
@@ -282,6 +297,90 @@ final class GameViewModel: ObservableObject {
             recordHandOutcome()
             if engine.heroBusted { showBustSheet = true }
         }
+    }
+
+    // MARK: - Tournament
+
+    func startTournament() {
+        guard !isHandRunning else { return }
+        guard bankroll.canAfford(TournamentState.buyIn) else {
+            pendingSeat = { [weak self] in self?.startTournament() }
+            showRuinSheet = true
+            return
+        }
+        bankroll.chargeBuyIn(TournamentState.buyIn)
+        saveBankroll()
+        clearTableSnapshot()                 // tournaments aren't resumed across launches
+        let t = TournamentState()
+        tournament = t
+        tournamentResult = nil
+        eliminatedOrder = []
+        isSeated = false
+        session = SessionStats()
+        stats = nil; advice = nil; equityHistory = []; handDecisions = []; lastStatsKey = ""
+        engine.beginTournament(startingStack: TournamentState.startingStack,
+                               sb: t.blinds.sb, bb: t.blinds.bb)
+    }
+
+    private func tournamentDealHand() {
+        guard var t = tournament,
+              !engine.players[0].eliminated, engine.activePlayerCount > 1 else { return }
+        isHandRunning = true
+        equityHistory = []; handDecisions = []; stats = nil; advice = nil; lastStatsKey = ""
+        engine.setBlindLevel(sb: t.blinds.sb, bb: t.blinds.bb)
+        let before = Set(engine.players.filter { $0.eliminated }.map(\.name))
+        Task { [weak self] in
+            guard let self else { return }
+            await self.engine.playHand()
+            self.isHandRunning = false
+            self.isHeroTurn = false
+            for p in self.engine.players where p.eliminated && !before.contains(p.name) {
+                self.eliminatedOrder.append(p.name)
+            }
+            t.handCompleted()
+            self.tournament = t
+            if self.engine.players[0].eliminated {
+                await self.resolveRemaining()
+                self.finishTournament()
+            } else if self.engine.activePlayerCount == 1 {
+                self.finishTournament()
+            }
+        }
+    }
+
+    // Play out the remaining AIs (hero already busted) to settle full standings.
+    private func resolveRemaining() async {
+        let saved = engine.aiDelay
+        engine.aiDelay = .zero
+        engine.heroActionProvider = { .checkCall }   // never called; hero is out
+        while engine.activePlayerCount > 1 {
+            let before = Set(engine.players.filter { $0.eliminated }.map(\.name))
+            await engine.playHand()
+            for p in engine.players where p.eliminated && !before.contains(p.name) {
+                eliminatedOrder.append(p.name)
+            }
+        }
+        engine.aiDelay = saved
+    }
+
+    private func finishTournament() {
+        let survivor = engine.players.first { !$0.eliminated }?.name
+        var order: [String] = []
+        if let survivor { order.append(survivor) }
+        order.append(contentsOf: eliminatedOrder.reversed())
+        let standings = order.enumerated().map {
+            TournamentResult.Standing(place: $0.offset + 1, name: $0.element,
+                                      payout: TournamentState.payout(place: $0.offset))
+        }
+        let heroPlace = standings.first { $0.name == "You" }?.place ?? order.count
+        let heroPayout = TournamentState.payout(place: heroPlace - 1)
+        if heroPayout > 0 { bankroll.cashOut(heroPayout); saveBankroll() }
+        tournamentResult = TournamentResult(standings: standings, heroPlace: heroPlace, heroPayout: heroPayout)
+        tournament = nil
+    }
+
+    func dismissTournamentResult() {
+        tournamentResult = nil
     }
 
     private var lastBoardCount = 0
