@@ -104,6 +104,7 @@ construction, and 25 end-to-end simulated hands asserting chip conservation.
 | `-demoleave` | Leaves the current table on launch, showing the cash-out recap (UI verification) |
 | `-showdrills` | Opens drill mode on launch (UI verification) |
 | `-lessonTopic <id>` | Opens lessons at a topic, e.g. `-lessonTopic chen` (UI verification) |
+| `-showdials` | Opens an opponent's dials popover on launch (UI verification) |
 
 ## Distribution
 

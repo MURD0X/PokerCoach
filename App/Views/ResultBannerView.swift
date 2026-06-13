@@ -179,7 +179,7 @@ struct ResultDetailSheet: View {
                 }
             }
 
-            LearnMoreChips(topics: Array(Set(decisions.flatMap(\.topics))).sorted { $0.rawValue < $1.rawValue }) {
+            LearnMoreChips(topics: Array(Set(decisions.flatMap(\.topics))).sorted { $0.rawValue < $1.rawValue }, vertical: true) {
                 lessonTopic = $0
             }
 

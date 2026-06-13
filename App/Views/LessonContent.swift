@@ -91,6 +91,7 @@ enum LessonContent {
 /// "Learn more" chips that deep-link into the lessons.
 struct LearnMoreChips: View {
     let topics: [LessonTopic]
+    var vertical = false
     let onOpen: (LessonTopic) -> Void
 
     var body: some View {
@@ -99,7 +100,7 @@ struct LearnMoreChips: View {
                 Text("LEARN MORE")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
-                FlowChips(topics: topics, onOpen: onOpen)
+                FlowChips(topics: topics, vertical: vertical, onOpen: onOpen)
             }
         }
     }
@@ -107,24 +108,33 @@ struct LearnMoreChips: View {
 
 private struct FlowChips: View {
     let topics: [LessonTopic]
+    var vertical = false
     let onOpen: (LessonTopic) -> Void
 
     var body: some View {
-        HStack(spacing: 6) {
-            ForEach(topics) { topic in
-                Button {
-                    onOpen(topic)
-                } label: {
-                    Label(topic.title, systemImage: "book")
-                        .font(.system(.caption, design: .rounded, weight: .semibold))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Capsule().fill(Color.green.opacity(0.14)))
-                        .foregroundStyle(.green)
-                }
-                .buttonStyle(.plain)
+        if vertical {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(topics) { topic in chip(topic) }
             }
-            Spacer(minLength: 0)
+        } else {
+            HStack(spacing: 6) {
+                ForEach(topics) { topic in chip(topic) }
+                Spacer(minLength: 0)
+            }
         }
+    }
+
+    private func chip(_ topic: LessonTopic) -> some View {
+        Button {
+            onOpen(topic)
+        } label: {
+            Label(topic.title, systemImage: "book")
+                .font(.system(.caption, design: .rounded, weight: .semibold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Capsule().fill(Color.green.opacity(0.14)))
+                .foregroundStyle(.green)
+        }
+        .buttonStyle(.plain)
     }
 }

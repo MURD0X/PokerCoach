@@ -60,6 +60,30 @@ public struct StyleReveal: Sendable {
     public var anythingKnown: Bool {
         tightness != nil || aggression != nil || skill != nil
     }
+    public var revealedCount: Int {
+        [tightness, aggression, skill].filter { $0 != nil }.count
+    }
+}
+
+/// Evidence thresholds that gate each revealed dial.
+public enum RevealRule {
+    public static let handsForTightness = 8
+    public static let actionsForAggression = 10
+    public static let showdownsForSkill = 3
+}
+
+/// A single dial in the detailed read: its name, the revealed value (nil if
+/// not yet earned), and a hint of what's still needed to learn it.
+public struct DialReading: Sendable, Identifiable {
+    public let name: String
+    public let value: String?
+    public let progressHint: String?
+    public var id: String { name }
+    public var isRevealed: Bool { value != nil }
+}
+
+public struct StyleReading: Sendable {
+    public let dials: [DialReading]
 }
 
 /// Four-handed no-limit Texas Hold'em. UI-agnostic: publishes changes via
@@ -206,10 +230,42 @@ public final class GameEngine {
             return StyleReveal(tightness: nil, aggression: nil, skill: nil)
         }
         return StyleReveal(
-            tightness: p.handsSeen >= 8 ? pers.tightnessLabel : nil,
-            aggression: p.observedActions >= 10 ? pers.aggressionLabel : nil,
-            skill: p.showdownsShown >= 3 ? pers.skillLabel : nil
+            tightness: p.handsSeen >= RevealRule.handsForTightness ? pers.tightnessLabel : nil,
+            aggression: p.observedActions >= RevealRule.actionsForAggression ? pers.aggressionLabel : nil,
+            skill: p.showdownsShown >= RevealRule.showdownsForSkill ? pers.skillLabel : nil
         )
+    }
+
+    /// The detailed read for the seat's popover: each dial revealed or with
+    /// a "what's left to learn it" hint.
+    public func styleReading(for id: Int) -> StyleReading {
+        guard id != 0, let p = players.first(where: { $0.id == id }), let pers = p.personality else {
+            return StyleReading(dials: [])
+        }
+        func hint(_ have: Int, _ need: Int, _ unit: String) -> String {
+            let left = max(0, need - have)
+            return "\(left) more \(unit)\(left == 1 ? "" : "s") to learn"
+        }
+        return StyleReading(dials: [
+            DialReading(
+                name: "Hand selection",
+                value: p.handsSeen >= RevealRule.handsForTightness ? pers.tightnessLabel : nil,
+                progressHint: p.handsSeen >= RevealRule.handsForTightness ? nil
+                    : hint(p.handsSeen, RevealRule.handsForTightness, "hand")
+            ),
+            DialReading(
+                name: "Betting style",
+                value: p.observedActions >= RevealRule.actionsForAggression ? pers.aggressionLabel : nil,
+                progressHint: p.observedActions >= RevealRule.actionsForAggression ? nil
+                    : hint(p.observedActions, RevealRule.actionsForAggression, "decision")
+            ),
+            DialReading(
+                name: "Skill",
+                value: p.showdownsShown >= RevealRule.showdownsForSkill ? pers.skillLabel : nil,
+                progressHint: p.showdownsShown >= RevealRule.showdownsForSkill ? nil
+                    : hint(p.showdownsShown, RevealRule.showdownsForSkill, "showdown")
+            ),
+        ])
     }
 
     /// Knowledge-fair range constraints for the live opponents, in seat

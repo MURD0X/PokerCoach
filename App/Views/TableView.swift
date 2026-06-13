@@ -2,6 +2,8 @@ import SwiftUI
 import PokerEngine
 
 // Anchor plumbing so chip flights know where seats and the pot live.
+struct SeatID: Identifiable { let id: Int }
+
 struct SeatAnchorKey: PreferenceKey {
     static var defaultValue: [Int: Anchor<CGPoint>] = [:]
     static func reduce(value: inout [Int: Anchor<CGPoint>], nextValue: () -> [Int: Anchor<CGPoint>]) {
@@ -38,6 +40,11 @@ struct ChipFlightView: View {
 
 struct TableView: View {
     @ObservedObject var model: GameViewModel
+    @State private var dialsFor: Int?
+
+    private var debugShowDials: Bool {
+        ProcessInfo.processInfo.arguments.contains("-showdials")
+    }
 
     private var engine: GameEngine { model.engine }
 
@@ -62,7 +69,8 @@ struct TableView: View {
                         showCards: revealAll && !player.folded,
                         cardWidth: 32,
                         winningCards: winningCards,
-                        reveal: engine.styleReveal(for: player.id)
+                        reveal: engine.styleReveal(for: player.id),
+                        onTapDials: { dialsFor = player.id }
                     ) }
                 }
             }
@@ -119,6 +127,13 @@ struct TableView: View {
         .overlayPreferenceValue(SeatAnchorKey.self) { seatAnchors in
             self.flightOverlay(seatAnchors: seatAnchors)
         }
+        .sheet(item: Binding(get: { dialsFor.map { SeatID(id: $0) } },
+                             set: { dialsFor = $0?.id })) { seat in
+            if let player = engine.players.first(where: { $0.id == seat.id }) {
+                DialsPopover(name: player.name, reading: engine.styleReading(for: seat.id))
+            }
+        }
+        .onAppear { if debugShowDials { dialsFor = 1 } }
     }
 
     private func seatAnchored<Content: View>(_ id: Int, @ViewBuilder content: () -> Content) -> some View {
@@ -159,6 +174,7 @@ struct SeatView: View {
     let cardWidth: CGFloat
     var winningCards: Set<Card> = []
     var reveal: StyleReveal? = nil
+    var onTapDials: (() -> Void)? = nil
 
     private var avatarColor: Color {
         let hue = Double(abs(player.name.hashValue % 360)) / 360
@@ -191,11 +207,18 @@ struct SeatView: View {
                 .foregroundStyle(.white.opacity(0.75))
 
             if let reveal {
-                Text(reveal.summary)
-                    .font(.system(size: 8.5, weight: .semibold, design: .rounded))
-                    .foregroundStyle(reveal.anythingKnown ? Color(red: 0.62, green: 0.89, blue: 0.75) : .white.opacity(0.45))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                // Fixed-width three-pip read indicator — never reflows the
+                // card. Tap the seat to see the full dials.
+                HStack(spacing: 3) {
+                    ForEach(0..<3, id: \.self) { i in
+                        Circle()
+                            .fill(i < reveal.revealedCount
+                                  ? Color(red: 0.62, green: 0.89, blue: 0.75)
+                                  : Color.white.opacity(0.28))
+                            .frame(width: 6, height: 6)
+                    }
+                }
+                .frame(height: 8)
             }
 
             if player.hole.count == 2 {
@@ -225,5 +248,59 @@ struct SeatView: View {
                 .strokeBorder(isActing ? Color(red: 0.95, green: 0.83, blue: 0.45) : .clear, lineWidth: 2)
         )
         .opacity(player.folded ? 0.4 : 1)
+        .contentShape(Rectangle())
+        .onTapGesture { if !player.isHero { onTapDials?() } }
+    }
+}
+
+// The seat's dials read: revealed traits, or what's left to learn each one.
+struct DialsPopover: View {
+    let name: String
+    let reading: StyleReading
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(reading.dials) { dial in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(dial.name)
+                                    .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                                if let hint = dial.progressHint {
+                                    Text(hint)
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            Spacer()
+                            if let value = dial.value {
+                                Text(value)
+                                    .font(.system(.subheadline, design: .rounded, weight: .bold))
+                                    .foregroundStyle(.green)
+                            } else {
+                                Image(systemName: "lock.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                } header: {
+                    Text("\(name)'s style")
+                } footer: {
+                    Text("Reads unlock as you gather evidence — hands seen, decisions watched, and cards shown at showdown. When a player busts, their replacement starts unknown again.")
+                }
+            }
+            .navigationTitle(name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
