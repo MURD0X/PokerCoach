@@ -7,6 +7,12 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Lessons 2.0, part 2 — interactive widgets: a Chen calculator (pick any
+  two cards, watch the score build step by step), a pot-odds playground
+  (sliders for pot and bet, rule-of-4-and-2 verdict), Which Hand Wins?
+  (real generated hands settled by the evaluator, with a streak), and a
+  position explorer (the same hand's advice at every seat). The lessons
+  now demonstrate instead of describe — all powered by the live engine.
 - Lessons 2.0, part 1: the lessons are now a linked table of contents —
   nine topics, each its own page (with new Bankroll Management content) —
   and the coach deep-links into them: "Learn more" chips appear in the

@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var showDrills = false
     @State private var showSettings = false
     @State private var showHistory = false
+    @State private var debugLessonTopic: LessonTopic?
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -28,6 +29,9 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showLessons) { LessonsView() }
+        .sheet(item: $debugLessonTopic) { topic in
+            LessonsView(initialTopic: topic)
+        }
         .sheet(isPresented: $showDrills) { DrillView() }
         .sheet(isPresented: $showSettings) { SettingsView(model: model) }
         .sheet(isPresented: $showHistory) {
@@ -90,6 +94,10 @@ struct ContentView: View {
             if args.contains("-showlog") { path = ["table"] }
             if args.contains("-showsettings") { showSettings = true }
             if args.contains("-showdrills") { showDrills = true }
+            if let raw = UserDefaults.standard.string(forKey: "lessonTopic"),
+               let topic = LessonTopic(rawValue: raw) {
+                debugLessonTopic = topic
+            }
             if args.contains("-showbust") {
                 model.session = SessionStats(handsPlayed: 23, biggestPotWon: 840, decisionsTotal: 31, decisionsFollowed: 22)
                 model.showBustSheet = true

@@ -15,6 +15,7 @@
 		33CD6208C1695E960FE8DE0F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E38AE295DC15C37837561C64 /* Assets.xcassets */; };
 		41F3768EE2AE2395A5F54BF6 /* ResultBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */; };
 		50595DBB9216146C2E0694B5 /* RuinSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4D99257DB4D95212726CEC6 /* RuinSheetView.swift */; };
+		58958788022CCD467C3C945F /* LessonWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46999825554BEC838BEA0CC9 /* LessonWidgets.swift */; };
 		5A990F15A851929DCA7A363D /* LessonContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC52FF4F0C086F27C42F041 /* LessonContent.swift */; };
 		5CFE0B3C27D2112EC556BBD8 /* StatsDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2163486976D59A63CEEFC6A0 /* StatsDashboardView.swift */; };
 		683DA86231180A71954CCE87 /* PokerCoachApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6EADD7BE62F6A280838F0E /* PokerCoachApp.swift */; };
@@ -48,6 +49,7 @@
 		3C6EC32705BD6CE2CD2951A4 /* LessonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonsView.swift; sourceTree = "<group>"; };
 		408118F1DFFC624C71A8CFBF /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultBannerView.swift; sourceTree = "<group>"; };
+		46999825554BEC838BEA0CC9 /* LessonWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonWidgets.swift; sourceTree = "<group>"; };
 		4C5F6F624BE0E41B19DC00EE /* SessionHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistory.swift; sourceTree = "<group>"; };
 		5A4D53E59015A3F3DAC14F24 /* card-deal.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "card-deal.wav"; sourceTree = "<group>"; };
 		62E79A54740D8BAEB1D8D35E /* LeaveRecapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaveRecapView.swift; sourceTree = "<group>"; };
@@ -93,6 +95,7 @@
 				62E79A54740D8BAEB1D8D35E /* LeaveRecapView.swift */,
 				9DC52FF4F0C086F27C42F041 /* LessonContent.swift */,
 				3C6EC32705BD6CE2CD2951A4 /* LessonsView.swift */,
+				46999825554BEC838BEA0CC9 /* LessonWidgets.swift */,
 				702E372D6D3213428789FDA4 /* LogView.swift */,
 				45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */,
 				C4D99257DB4D95212726CEC6 /* RuinSheetView.swift */,
@@ -253,6 +256,7 @@
 				D1F203E07E5A919E23F08D5F /* HomeView.swift in Sources */,
 				C3450A12A0F22BE976D7A184 /* LeaveRecapView.swift in Sources */,
 				5A990F15A851929DCA7A363D /* LessonContent.swift in Sources */,
+				58958788022CCD467C3C945F /* LessonWidgets.swift in Sources */,
 				E5A9EBC758E9B75BF41FA149 /* LessonsView.swift in Sources */,
 				9B94EE156CC25CC07366164F /* LogView.swift in Sources */,
 				683DA86231180A71954CCE87 /* PokerCoachApp.swift in Sources */,
