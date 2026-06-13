@@ -92,6 +92,7 @@ final class GameViewModel: ObservableObject {
     @Published var tournamentResult: TournamentResult?
     private var eliminatedOrder: [String] = []
     private var pendingForfeit = false
+    private var tournamentHeroHands = 0
 
     var inTournament: Bool { tournament != nil }
     private var sessionBuyInTotal = 0
@@ -316,6 +317,8 @@ final class GameViewModel: ObservableObject {
         tournament = t
         tournamentResult = nil
         eliminatedOrder = []
+        tournamentHeroHands = 0
+        sessionStartDate = Date()
         isSeated = false
         session = SessionStats()
         stats = nil; advice = nil; equityHistory = []; handDecisions = []; lastStatsKey = ""
@@ -335,6 +338,7 @@ final class GameViewModel: ObservableObject {
             await self.engine.playHand()
             self.isHandRunning = false
             self.isHeroTurn = false
+            self.tournamentHeroHands = self.engine.handNumber   // hands the hero played, before any AI playout
             for p in self.engine.players where p.eliminated && !before.contains(p.name) {
                 self.eliminatedOrder.append(p.name)
             }
@@ -378,6 +382,15 @@ final class GameViewModel: ObservableObject {
         let heroPlace = standings.first { $0.name == "You" }?.place ?? order.count
         let heroPayout = TournamentState.payout(place: heroPlace - 1)
         if heroPayout > 0 { bankroll.cashOut(heroPayout); saveBankroll() }
+        // Record the tournament like any other session so the bankroll is fully
+        // accounted for (buy-in out, winnings in) and it lands on the chart.
+        SessionHistoryStore.append(SessionRecord(
+            date: sessionStartDate, bigBlind: 0,
+            buyInTotal: TournamentState.buyIn, cashOut: heroPayout,
+            hands: tournamentHeroHands, decisionsTotal: session.decisionsTotal,
+            decisionsFollowed: session.decisionsFollowed,
+            balanceAfter: bankroll.balance, isTournament: true
+        ))
         tournamentResult = TournamentResult(standings: standings, heroPlace: heroPlace, heroPayout: heroPayout)
         tournament = nil
     }
