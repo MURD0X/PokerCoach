@@ -13,6 +13,7 @@ struct DrillView: View {
     @State private var review: DecisionReview?
     @State private var tally: [ReviewVerdict: Int] = [:]
     @State private var finished = false
+    @State private var lessonTopic: LessonTopic?
 
     var body: some View {
         NavigationStack {
@@ -39,6 +40,9 @@ struct DrillView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
                 }
+            }
+            .sheet(item: $lessonTopic) { topic in
+                LessonsView(initialTopic: topic)
             }
         }
         .presentationDetents([.large])
@@ -156,6 +160,10 @@ struct DrillView: View {
                     .font(.system(.caption, design: .rounded))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+            if !spot.advice.topics.isEmpty {
+                Divider()
+                LearnMoreChips(topics: spot.advice.topics) { lessonTopic = $0 }
             }
             Button {
                 nextSpot()
