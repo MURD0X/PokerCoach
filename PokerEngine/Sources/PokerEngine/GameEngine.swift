@@ -44,6 +44,8 @@ public struct Player: Identifiable, Sendable {
     public var handsSeen = 0
     public var observedActions = 0
     public var showdownsShown = 0
+    /// Tournament only: out of the event, no longer dealt in.
+    public var eliminated = false
 }
 
 /// What the player has learned about an opponent so far. Traits stay hidden
@@ -96,6 +98,56 @@ public final class GameEngine {
     public nonisolated static let startingStack = TableStakes.standard.buyIn
 
     public private(set) var stakes: TableStakes
+
+    public enum Mode: Sendable { case cash, tournament }
+    public private(set) var mode: Mode = .cash
+    /// Tournament blind amounts for the current level; overrides `stakes`.
+    private var blindOverride: (sb: Int, bb: Int)?
+
+    public var activePlayerCount: Int { players.filter { !$0.eliminated }.count }
+
+    /// Begin a sit-n-go on the current lineup: equal stacks, level-1 blinds,
+    /// nobody eliminated. The orchestrator advances blinds and reads results.
+    public func beginTournament(startingStack: Int, sb: Int, bb: Int) {
+        mode = .tournament
+        blindOverride = (sb, bb)
+        for i in players.indices {
+            players[i].stack = startingStack
+            players[i].eliminated = false
+            players[i].handsSeen = 0
+            players[i].observedActions = 0
+            players[i].showdownsShown = 0
+        }
+        board = []; stage = .idle; currentBet = 0; minRaise = bb
+        handNumber = 0; log = []; logCounter = 0; actingIndex = nil; lastResult = nil
+        dealerIndex = Int.random(in: 0..<players.count)
+        notify()
+    }
+
+    public func setBlindLevel(sb: Int, bb: Int) { blindOverride = (sb, bb) }
+
+    /// Seat roles for 2–4 active players. Returns *seat indices* for the
+    /// small/big blind and who acts first pre- and post-flop. Heads-up
+    /// follows the button-is-small-blind rule.
+    nonisolated static func seatRoles(activeSeats: [Int], button: Int)
+        -> (sb: Int, bb: Int, preflopFirst: Int, postflopFirst: Int) {
+        let n = activeSeats.count
+        let b = activeSeats.firstIndex(of: button) ?? 0
+        func at(_ k: Int) -> Int { activeSeats[((b + k) % n + n) % n] }
+        if n == 2 {
+            let sb = activeSeats[b]          // button posts the small blind
+            let bb = at(1)
+            return (sb, bb, sb, bb)          // SB acts first preflop, BB first postflop
+        }
+        let sb = at(1), bb = at(2)
+        return (sb, bb, at(3), sb)
+    }
+
+    private func nextActiveSeat(after seat: Int) -> Int {
+        var d = seat
+        repeat { d = (d + 1) % players.count } while players[d].eliminated
+        return d
+    }
 
     public private(set) var players: [Player]
     public private(set) var board: [Card] = []
@@ -356,7 +408,8 @@ public final class GameEngine {
     }
 
     public func playHand() async {
-        guard !heroBusted else { return }
+        if mode == .cash { guard !heroBusted else { return } }
+        else { guard activePlayerCount > 1 else { return } }
         handNumber += 1
         board = []
         deck = Deck.shuffled()
@@ -365,7 +418,13 @@ public final class GameEngine {
         lastResult = nil
 
         for i in players.indices {
-            if players[i].stack == 0 { // busted opponents leave; someone new sits down
+            if players[i].eliminated {
+                players[i].folded = true; players[i].allIn = false
+                players[i].hole = []; players[i].betThisRound = 0; players[i].totalBet = 0
+                players[i].hasActed = false; players[i].lastAction = "Out"; players[i].preflopAction = .none
+                continue
+            }
+            if mode == .cash && players[i].stack == 0 { // busted opponents leave; someone new sits down
                 let departing = players[i].name
                 let exclude = Set(players.map(\.name))
                 let arrival = OpponentFactory.randomLineup(count: 1, excluding: exclude)[0]
@@ -385,23 +444,27 @@ public final class GameEngine {
             players[i].handsSeen += 1
         }
 
-        dealerIndex = (dealerIndex + 1) % players.count
-        let sb = (dealerIndex + 1) % players.count
-        let bb = (dealerIndex + 2) % players.count
+        dealerIndex = nextActiveSeat(after: dealerIndex)
+        let active = players.indices.filter { !players[$0].eliminated }
+        let roles = GameEngine.seatRoles(activeSeats: active, button: dealerIndex)
+        let sb = roles.sb, bb = roles.bb
+        let smallBlind = blindOverride?.sb ?? stakes.smallBlind
+        let bigBlind = blindOverride?.bb ?? stakes.bigBlind
+        minRaise = bigBlind
 
         emit("— Hand #\(handNumber) — \(players[dealerIndex].name) \(players[dealerIndex].isHero ? "have" : "has") the dealer button.", .header)
-        pay(sb, stakes.smallBlind)
-        players[sb].lastAction = "SB \(stakes.smallBlind)"
-        pay(bb, stakes.bigBlind)
-        players[bb].lastAction = "BB \(stakes.bigBlind)"
-        currentBet = stakes.bigBlind
-        emit("\(players[sb].name) \(verb(sb, "post")) small blind \(stakes.smallBlind), \(players[bb].name) \(verb(bb, "post")) big blind \(stakes.bigBlind).")
+        pay(sb, smallBlind)
+        players[sb].lastAction = "SB \(smallBlind)"
+        pay(bb, bigBlind)
+        players[bb].lastAction = "BB \(bigBlind)"
+        currentBet = bigBlind
+        emit("\(players[sb].name) \(verb(sb, "post")) small blind \(smallBlind), \(players[bb].name) \(verb(bb, "post")) big blind \(bigBlind).")
 
         let streets: [(Stage, Int, Int)] = [
-            (.preflop, 0, (bb + 1) % players.count),
-            (.flop, 3, sb),
-            (.turn, 1, sb),
-            (.river, 1, sb),
+            (.preflop, 0, roles.preflopFirst),
+            (.flop, 3, roles.postflopFirst),
+            (.turn, 1, roles.postflopFirst),
+            (.river, 1, roles.postflopFirst),
         ]
 
         for (street, dealCount, startIndex) in streets {
@@ -411,7 +474,7 @@ public final class GameEngine {
                 for _ in 0..<dealCount { board.append(deck.removeLast()) }
                 emit("\(street.rawValue.capitalized): \(board.map(\.text).joined(separator: " "))", .street)
                 currentBet = 0
-                minRaise = stakes.bigBlind
+                minRaise = bigBlind
                 for i in players.indices {
                     players[i].betThisRound = 0
                     players[i].hasActed = false
@@ -433,6 +496,7 @@ public final class GameEngine {
                     explanation: nil, winningCards: []
                 )
                 emit("\(winner) \(winVerb) \(pot) — everyone else folded.", .win)
+                markEliminations()
                 stage = .done
                 actingIndex = nil
                 notify()
@@ -441,9 +505,19 @@ public final class GameEngine {
         }
 
         showdown()
+        markEliminations()
         stage = .done
         actingIndex = nil
         notify()
+    }
+
+    private func markEliminations() {
+        guard mode == .tournament else { return }
+        for i in players.indices where !players[i].eliminated && players[i].stack == 0 {
+            players[i].eliminated = true
+            players[i].folded = true
+            emit(players[i].isHero ? "You are eliminated." : "\(players[i].name) is eliminated.", .info)
+        }
     }
 
     @discardableResult
