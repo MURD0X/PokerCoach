@@ -24,6 +24,7 @@ struct DecisionRecord: Identifiable {
     let recommendation: CoachAction
     let action: HeroAction
     let review: DecisionReview
+    let topics: [LessonTopic]
 }
 
 struct ChipFlight: Identifiable, Equatable {
@@ -388,7 +389,8 @@ final class GameViewModel: ObservableObject {
                     recommendation: advice.action, action: action,
                     equity: advice.equity, potOddsNeeded: advice.potOddsNeeded,
                     street: engine.stage
-                )
+                ),
+                topics: advice.topics
             ))
         }
         pendingAction = nil
