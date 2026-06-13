@@ -89,13 +89,18 @@ struct HistoryView: View {
                     )
                     .foregroundStyle(.green.gradient)
                     .interpolationMethod(.monotone)
-                    if let net = point.net {
-                        PointMark(
-                            x: .value("Session", point.index),
-                            y: .value("Bankroll", point.balance)
-                        )
-                        .foregroundStyle(net >= 0 ? Color.green : Color.red)
-                        .symbolSize(30)
+                    PointMark(
+                        x: .value("Session", point.index),
+                        y: .value("Bankroll", point.balance)
+                    )
+                    .foregroundStyle(point.net.map { $0 >= 0 ? Color.green : Color.red } ?? .secondary)
+                    .symbolSize(point.net == nil ? 40 : 30)
+                    .annotation(position: .top, spacing: 4) {
+                        if point.net == nil {
+                            Text("Start")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
                 if let start = bankrollCurve.first {
@@ -105,6 +110,7 @@ struct HistoryView: View {
                 }
             }
             .chartXAxis(.hidden)
+            .chartXScale(domain: -0.3 ... Double(records.count) + 0.3)
             .frame(height: 160)
         }
     }
