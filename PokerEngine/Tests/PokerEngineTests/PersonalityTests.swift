@@ -192,3 +192,34 @@ final class PersonalityBehaviorTests: XCTestCase {
         XCTAssertFalse(engine.styleReveal(for: 1).anythingKnown)
     }
 }
+
+@MainActor
+final class StyleReadingTests: XCTestCase {
+    func testReadingShowsProgressThenReveals() async {
+        let engine = GameEngine(opponents: [
+            ("T", Personality(tightness: 0.9, aggression: 0.2, skill: 0.9)),
+            ("B", .balanced), ("C", .balanced),
+        ])
+        engine.aiDelay = .zero
+        engine.heroActionProvider = { .checkCall }
+
+        // Before any hands: all three dials hidden, each with a hint.
+        let cold = engine.styleReading(for: 1)
+        XCTAssertEqual(cold.dials.count, 3)
+        XCTAssertTrue(cold.dials.allSatisfy { !$0.isRevealed })
+        XCTAssertTrue(cold.dials.allSatisfy { ($0.progressHint ?? "").contains("to learn") })
+        XCTAssertTrue(cold.dials[0].progressHint!.contains("8 more hands"))
+
+        for _ in 0..<15 {
+            topUpAllStacks(engine)
+            await engine.playHand()
+        }
+
+        let warm = engine.styleReading(for: 1)
+        // Hand selection revealed after 8 hands; its hint is gone.
+        XCTAssertEqual(warm.dials[0].value, "Tight")
+        XCTAssertNil(warm.dials[0].progressHint)
+        // The hero has no dials.
+        XCTAssertTrue(engine.styleReading(for: 0).dials.isEmpty)
+    }
+}
