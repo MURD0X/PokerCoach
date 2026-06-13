@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- The in-session screen now fits without scrolling on phone-class displays
+  (padding diet; the dashboard's pot-odds row, which duplicated the coach
+  bar's "need X%", was retired). This was announced for 1.9.0 but a failed
+  merge kept it out — shipping correctly now.
+
 ## [1.10.0] - 2026-06-12
 
 ### Added
