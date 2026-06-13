@@ -50,30 +50,61 @@ struct HistoryView: View {
         .presentationDetents([.large])
     }
 
+    /// A self-consistent bankroll curve. The per-session `balanceAfter`
+    /// snapshots are absolute readings taken at different moments — and the
+    /// bankroll also moves outside sessions (tournament buy-ins, a fresh start
+    /// after going broke) — so plotting them directly produces a line that
+    /// contradicts the session ledger. Instead we anchor the latest point to
+    /// the current bankroll and walk backward through each session's net, which
+    /// always matches the results listed below. Index 0 is the bankroll just
+    /// before the first recorded session.
+    private struct BankrollPoint: Identifiable {
+        let index: Int
+        let balance: Int
+        let net: Int?        // nil for the starting anchor
+        var id: Int { index }
+    }
+
+    private var bankrollCurve: [BankrollPoint] {
+        let nets = records.map(\.net)
+        var running = currentBalance - nets.reduce(0, +)
+        var points = [BankrollPoint(index: 0, balance: running, net: nil)]
+        for (offset, net) in nets.enumerated() {
+            running += net
+            points.append(BankrollPoint(index: offset + 1, balance: running, net: net))
+        }
+        return points
+    }
+
     private var chartSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("BANKROLL AFTER EACH SESSION")
+            Text("BANKROLL OVER TIME")
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(.secondary)
             Chart {
-                ForEach(Array(records.enumerated()), id: \.element.id) { index, record in
+                ForEach(bankrollCurve) { point in
                     LineMark(
-                        x: .value("Session", index + 1),
-                        y: .value("Bankroll", record.balanceAfter)
+                        x: .value("Session", point.index),
+                        y: .value("Bankroll", point.balance)
                     )
                     .foregroundStyle(.green.gradient)
                     .interpolationMethod(.monotone)
-                    PointMark(
-                        x: .value("Session", index + 1),
-                        y: .value("Bankroll", record.balanceAfter)
-                    )
-                    .foregroundStyle(record.net >= 0 ? Color.green : Color.red)
-                    .symbolSize(30)
+                    if let net = point.net {
+                        PointMark(
+                            x: .value("Session", point.index),
+                            y: .value("Bankroll", point.balance)
+                        )
+                        .foregroundStyle(net >= 0 ? Color.green : Color.red)
+                        .symbolSize(30)
+                    }
                 }
-                RuleMark(y: .value("Start", BankrollLedger.startingAmount))
-                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
-                    .foregroundStyle(.secondary.opacity(0.5))
+                if let start = bankrollCurve.first {
+                    RuleMark(y: .value("Start", start.balance))
+                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                        .foregroundStyle(.secondary.opacity(0.5))
+                }
             }
+            .chartXAxis(.hidden)
             .frame(height: 160)
         }
     }
