@@ -139,7 +139,7 @@ struct HistoryView: View {
             ForEach(records.suffix(12).reversed()) { record in
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Blinds \(record.stakesName)")
+                        Text(record.displayName)
                             .font(.system(.subheadline, design: .rounded, weight: .semibold))
                         Text("\(record.date.formatted(date: .abbreviated, time: .shortened)) · \(record.hands) hand\(record.hands == 1 ? "" : "s")")
                             .font(.caption2)

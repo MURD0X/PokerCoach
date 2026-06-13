@@ -14,10 +14,16 @@ struct SessionRecord: Codable, Identifiable {
     let decisionsFollowed: Int
     /// Bankroll right after settling this session — the chart's y-value.
     let balanceAfter: Int
+    /// Optional; absent on cash records persisted before tournaments existed.
+    var isTournament: Bool? = nil
 
     var net: Int { cashOut - buyInTotal }
     var stakesName: String {
         TableStakes.all.first { $0.bigBlind == bigBlind }?.name ?? "\(bigBlind / 2)/\(bigBlind)"
+    }
+    /// Header shown in the ledger: a tournament label or the cash stakes.
+    var displayName: String {
+        isTournament == true ? "Sit & Go tournament" : "Blinds \(stakesName)"
     }
     var adherencePercent: Int? {
         guard decisionsTotal > 0 else { return nil }
