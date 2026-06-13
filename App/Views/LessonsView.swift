@@ -54,6 +54,7 @@ struct LessonDetailView: View {
                 if topic == .handRankings {
                     rankingsTable
                 }
+                widget
                 ForEach(LessonContent.blocks(for: topic)) { block in
                     VStack(alignment: .leading, spacing: 3) {
                         Text(block.title)
@@ -69,6 +70,17 @@ struct LessonDetailView: View {
         }
         .navigationTitle(topic.title)
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    @ViewBuilder
+    private var widget: some View {
+        switch topic {
+        case .chen: ChenCalculatorView()
+        case .potOdds: PotOddsPlaygroundView()
+        case .handRankings: WhichHandWinsView()
+        case .position: PositionExplorerView()
+        default: EmptyView()
+        }
     }
 
     private var rankingsTable: some View {
