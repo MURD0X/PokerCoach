@@ -89,4 +89,32 @@ final class TournamentEngineTests: XCTestCase {
             XCTAssertTrue(engine.players[2].hole.isEmpty, "eliminated seat dealt cards")
         }
     }
+
+    func testForfeitHeroEliminatesHeroAndKeepsOthers() async {
+        let engine = GameEngine()
+        engine.aiDelay = .zero
+        engine.heroActionProvider = { .checkCall }
+        engine.beginTournament(startingStack: 1000, sb: 10, bb: 20)
+        let before = engine.activePlayerCount
+
+        engine.forfeitHero()
+
+        XCTAssertTrue(engine.players[0].eliminated, "hero is out after forfeiting")
+        XCTAssertEqual(engine.players[0].stack, 0, "forfeited stack is surrendered")
+        XCTAssertEqual(engine.activePlayerCount, before - 1, "only the hero leaves")
+        // The remaining field plays on to a single winner.
+        var hands = 0
+        while engine.activePlayerCount > 1 && hands < 400 {
+            await engine.playHand()
+            XCTAssertTrue(engine.players[0].hole.isEmpty, "forfeited hero dealt cards")
+            hands += 1
+        }
+        XCTAssertEqual(engine.activePlayerCount, 1, "field resolves to one winner")
+    }
+
+    func testForfeitHeroIgnoredInCashMode() {
+        let engine = GameEngine()        // cash mode by default
+        engine.forfeitHero()
+        XCTAssertFalse(engine.players[0].eliminated, "forfeit is tournament-only")
+    }
 }

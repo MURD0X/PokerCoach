@@ -165,6 +165,7 @@ struct TableScreen: View {
     @State private var showWhy = false
     @State private var showResultDetails = false
     @State private var showLog = false
+    @State private var showLeaveTournament = false
 
     var body: some View {
         ScrollView {
@@ -183,8 +184,14 @@ struct TableScreen: View {
                          : "Blinds \(model.engine.stakes.name)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if !model.inTournament {
-                ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
+                if model.inTournament {
+                    Button(role: .destructive) {
+                        showLeaveTournament = true
+                    } label: {
+                        Label("Leave Tournament", systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                } else {
                     Button {
                         model.showTablePicker = true
                     } label: {
@@ -193,6 +200,13 @@ struct TableScreen: View {
                     .disabled(model.isHandRunning)
                 }
             }
+        }
+        .confirmationDialog("Leave the tournament?",
+                            isPresented: $showLeaveTournament, titleVisibility: .visible) {
+            Button("Leave Tournament", role: .destructive) { model.forfeitTournament() }
+            Button("Keep Playing", role: .cancel) { }
+        } message: {
+            Text("You'll forfeit your stack and finish in \(model.engine.activePlayerCount)\(Self.ordinalSuffix(model.engine.activePlayerCount)) place. You only keep winnings if you finish in the top two.")
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(spacing: 0) {
@@ -228,6 +242,15 @@ struct TableScreen: View {
                ProcessInfo.processInfo.arguments.contains("-autosheets") {
                 showResultDetails = true
             }
+        }
+    }
+
+    static func ordinalSuffix(_ n: Int) -> String {
+        switch n % 10 {
+        case 1 where n % 100 != 11: return "st"
+        case 2 where n % 100 != 12: return "nd"
+        case 3 where n % 100 != 13: return "rd"
+        default: return "th"
         }
     }
 
