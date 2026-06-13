@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		01251B0FD76E0F7BA979EBAF /* win-chime.wav in Resources */ = {isa = PBXBuildFile; fileRef = 37DEF3E034B84EB17E16C0B3 /* win-chime.wav */; };
 		04B816A6DC5E49AACB36F102 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 408118F1DFFC624C71A8CFBF /* SoundManager.swift */; };
+		074B9FF06264BBEFD75EF997 /* TournamentResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4813D1BA0DAA1C394E6686DA /* TournamentResultView.swift */; };
 		093043BDB01932F4A9FBE353 /* SessionHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C5F6F624BE0E41B19DC00EE /* SessionHistory.swift */; };
 		0E2A559C0125DFFBD04B5806 /* PokerEngine in Frameworks */ = {isa = PBXBuildFile; productRef = D04CA99D8EFE986F13E6B625 /* PokerEngine */; };
 		2A32EC575482D191316C96FC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C52D30E015B07FB67CA71085 /* ContentView.swift */; };
@@ -51,6 +52,7 @@
 		408118F1DFFC624C71A8CFBF /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		45DB19D8D4CCD8A4C18F8285 /* ResultBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultBannerView.swift; sourceTree = "<group>"; };
 		46999825554BEC838BEA0CC9 /* LessonWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonWidgets.swift; sourceTree = "<group>"; };
+		4813D1BA0DAA1C394E6686DA /* TournamentResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TournamentResultView.swift; sourceTree = "<group>"; };
 		4C5F6F624BE0E41B19DC00EE /* SessionHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistory.swift; sourceTree = "<group>"; };
 		5A4D53E59015A3F3DAC14F24 /* card-deal.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "card-deal.wav"; sourceTree = "<group>"; };
 		62E79A54740D8BAEB1D8D35E /* LeaveRecapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaveRecapView.swift; sourceTree = "<group>"; };
@@ -105,6 +107,7 @@
 				2163486976D59A63CEEFC6A0 /* StatsDashboardView.swift */,
 				1834E2D14045043E2A1A5F00 /* TablePickerView.swift */,
 				9728FE05D561D9DA3C1A2B9C /* TableView.swift */,
+				4813D1BA0DAA1C394E6686DA /* TournamentResultView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -272,6 +275,7 @@
 				9349AD8DAA1392390792BA65 /* TablePickerView.swift in Sources */,
 				6EE55F94F73981FC17C63E83 /* TableView.swift in Sources */,
 				D1D0F11BF6C0A30182C30857 /* Theme.swift in Sources */,
+				074B9FF06264BBEFD75EF997 /* TournamentResultView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

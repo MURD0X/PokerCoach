@@ -22,7 +22,11 @@ struct ContentView: View {
                 onDrills: { showDrills = true },
                 onLessons: { showLessons = true },
                 onHistory: { showHistory = true },
-                onSettings: { showSettings = true }
+                onSettings: { showSettings = true },
+                onTournament: {
+                    if !model.inTournament { model.startTournament() }
+                    path = ["table"]
+                }
             )
             .navigationDestination(for: String.self) { _ in
                 TableScreen(model: model)
@@ -83,6 +87,18 @@ struct ContentView: View {
         .sheet(isPresented: $model.showRuinSheet) {
             RuinSheetView(lifetime: model.lifetime) { model.acceptFreshBankroll() }
         }
+        .sheet(isPresented: Binding(
+            get: { model.tournamentResult != nil },
+            set: { if !$0 { model.dismissTournamentResult() } }
+        )) {
+            if let r = model.tournamentResult {
+                TournamentResultView(
+                    result: r,
+                    onPlayAgain: { model.dismissTournamentResult(); model.startTournament() },
+                    onDone: { model.dismissTournamentResult(); path = [] }
+                )
+            }
+        }
         .onAppear {
             let args = ProcessInfo.processInfo.arguments
             if args.contains("-autodeal") {
@@ -94,6 +110,21 @@ struct ContentView: View {
             if args.contains("-showlog") { path = ["table"] }
             if args.contains("-showsettings") { showSettings = true }
             if args.contains("-showdrills") { showDrills = true }
+            if args.contains("-tournament") {
+                if !model.inTournament { model.startTournament() }
+                path = ["table"]
+                model.dealHand()
+            }
+            if args.contains("-tournamentresult") {
+                model.tournamentResult = TournamentResult(
+                    standings: [
+                        .init(place: 1, name: "You", payout: 2600),
+                        .init(place: 2, name: "Priya", payout: 1400),
+                        .init(place: 3, name: "Stefan", payout: 0),
+                        .init(place: 4, name: "Omar", payout: 0)
+                    ],
+                    heroPlace: 1, heroPayout: 2600)
+            }
             if let raw = UserDefaults.standard.string(forKey: "lessonTopic"),
                let topic = LessonTopic(rawValue: raw) {
                 debugLessonTopic = topic
@@ -147,16 +178,20 @@ struct TableScreen: View {
             .padding(.bottom, 8)
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("Blinds \(model.engine.stakes.name)")
+        .navigationTitle(model.inTournament
+                         ? "Sit & Go · Level \(model.tournament?.level ?? 1)"
+                         : "Blinds \(model.engine.stakes.name)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    model.showTablePicker = true
-                } label: {
-                    Label("Switch Table", systemImage: "dice.fill")
+            if !model.inTournament {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        model.showTablePicker = true
+                    } label: {
+                        Label("Switch Table", systemImage: "dice.fill")
+                    }
+                    .disabled(model.isHandRunning)
                 }
-                .disabled(model.isHandRunning)
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -198,7 +233,14 @@ struct TableScreen: View {
 
     private var statusStrip: some View {
         HStack(spacing: 10) {
-            HStack(spacing: 6) {
+            if model.inTournament {
+                Image(systemName: "trophy.fill").font(.footnote).foregroundStyle(Theme.gold)
+                Text("Blinds \(model.tournament?.blinds.sb ?? 10)/\(model.tournament?.blinds.bb ?? 20)")
+                    .font(.system(.subheadline, design: .rounded, weight: .bold))
+                Text("· \(model.engine.activePlayerCount) left")
+                    .font(.system(.caption2, design: .rounded))
+                    .foregroundStyle(.secondary)
+            } else {
                 Image(systemName: "banknote")
                     .font(.footnote)
                     .foregroundStyle(.green)
