@@ -7,6 +7,13 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Fixed
+- Version metadata: TestFlight builds were all uploading as 1.0(1) because
+  the switch to an explicit Info.plist (for the launch screen) dropped the
+  CFBundleShortVersionString / CFBundleVersion keys, so every build since
+  silently defaulted to version 1.0. Restored — the binary now carries the
+  real MARKETING_VERSION / CURRENT_PROJECT_VERSION.
+
+### Fixed
 - The in-session screen now fits without scrolling on phone-class displays
   (padding diet; the dashboard's pot-odds row, which duplicated the coach
   bar's "need X%", was retired). This was announced for 1.9.0 but a failed
