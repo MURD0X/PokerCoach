@@ -22,6 +22,7 @@ struct BustSheetView: View {
     let canBuyBack: Bool
     let onBuyBack: () -> Void
     let onNewTable: () -> Void
+    @State private var lessonTopic: LessonTopic?
 
     var body: some View {
         VStack(spacing: 18) {
@@ -67,11 +68,16 @@ struct BustSheetView: View {
                 .controlSize(.large)
             }
 
+            LearnMoreChips(topics: [.bankroll]) { lessonTopic = $0 }
+
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 24)
         .presentationDetents([.medium])
         .interactiveDismissDisabled()
+        .sheet(item: $lessonTopic) { topic in
+            LessonsView(initialTopic: topic)
+        }
     }
 
     private func recapRow(_ icon: String, _ title: String, _ value: String) -> some View {

@@ -7,6 +7,11 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Lessons 2.0, part 1: the lessons are now a linked table of contents —
+  nine topics, each its own page (with new Bankroll Management content) —
+  and the coach deep-links into them: "Learn more" chips appear in the
+  Why sheet, the post-hand review, and the bust recap, landing on exactly
+  the lesson the coach just used.
 - A front page: the app now opens to a branded home screen — bankroll up
   top, a Continue Session card showing your waiting table (opponents,
   blinds, stack), Take a Seat when you're between tables, and doors to

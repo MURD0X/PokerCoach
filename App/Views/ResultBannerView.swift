@@ -39,6 +39,7 @@ struct ResultDetailSheet: View {
     var equityHistory: [StreetEquity] = []
     var decisions: [DecisionRecord] = []
     @Environment(\.dismiss) private var dismiss
+    @State private var lessonTopic: LessonTopic?
 
     private var heroWon: Bool { result.winnerNames.contains("You") }
 
@@ -136,6 +137,9 @@ struct ResultDetailSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
+        .sheet(item: $lessonTopic) { topic in
+            LessonsView(initialTopic: topic)
+        }
     }
 
     private func barColor(_ value: Double) -> Color {
@@ -173,6 +177,10 @@ struct ResultDetailSheet: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+            }
+
+            LearnMoreChips(topics: Array(Set(decisions.flatMap(\.topics))).sorted { $0.rawValue < $1.rawValue }) {
+                lessonTopic = $0
             }
 
             if let lesson = worstLeak {

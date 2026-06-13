@@ -83,6 +83,7 @@ struct CoachBarView: View {
 struct CoachWhySheet: View {
     let advice: CoachAdvice
     @Environment(\.dismiss) private var dismiss
+    @State private var lessonTopic: LessonTopic?
 
     var body: some View {
         NavigationStack {
@@ -99,9 +100,14 @@ struct CoachWhySheet: View {
                             .font(.system(.subheadline, design: .rounded))
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    Divider()
+                    LearnMoreChips(topics: advice.topics) { lessonTopic = $0 }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(20)
+            }
+            .sheet(item: $lessonTopic) { topic in
+                LessonsView(initialTopic: topic)
             }
             .navigationTitle("Coach's reasoning")
             .navigationBarTitleDisplayMode(.inline)
