@@ -407,6 +407,18 @@ public final class GameEngine {
         notify()
     }
 
+    /// Walk away from a tournament: the hero forfeits their stack and is
+    /// eliminated immediately, locking in their current finishing position.
+    /// Only valid between hands in tournament mode.
+    public func forfeitHero() {
+        guard mode == .tournament, !players[0].eliminated,
+              stage == .idle || stage == .done else { return }
+        players[0].stack = 0
+        players[0].eliminated = true
+        emit("You leave the tournament.", .info)
+        notify()
+    }
+
     public func playHand() async {
         if mode == .cash { guard !heroBusted else { return } }
         else { guard activePlayerCount > 1 else { return } }

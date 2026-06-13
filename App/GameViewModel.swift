@@ -91,6 +91,7 @@ final class GameViewModel: ObservableObject {
     @Published var tournament: TournamentState?
     @Published var tournamentResult: TournamentResult?
     private var eliminatedOrder: [String] = []
+    private var pendingForfeit = false
 
     var inTournament: Bool { tournament != nil }
     private var sessionBuyInTotal = 0
@@ -339,7 +340,9 @@ final class GameViewModel: ObservableObject {
             }
             t.handCompleted()
             self.tournament = t
-            if self.engine.players[0].eliminated {
+            if self.pendingForfeit {
+                self.completeForfeit()           // hero folded out; now leave for good
+            } else if self.engine.players[0].eliminated {
                 await self.resolveRemaining()
                 self.finishTournament()
             } else if self.engine.activePlayerCount == 1 {
@@ -377,6 +380,40 @@ final class GameViewModel: ObservableObject {
         if heroPayout > 0 { bankroll.cashOut(heroPayout); saveBankroll() }
         tournamentResult = TournamentResult(standings: standings, heroPlace: heroPlace, heroPayout: heroPayout)
         tournament = nil
+    }
+
+    /// Leave a tournament in progress: the hero forfeits their stack and is
+    /// eliminated, locking their current finishing place (so quitting heads-up
+    /// still cashes 2nd). If a hand is live, the hero folds out of it first and
+    /// the forfeit completes once the hand settles. The AIs then play out to
+    /// fill in the final standings.
+    func forfeitTournament() {
+        guard inTournament, !pendingForfeit, !engine.players[0].eliminated else { return }
+        if isHeroTurn {
+            pendingForfeit = true       // fold out of the live hand, then forfeit
+            perform(.fold)
+            return
+        }
+        if isHandRunning {
+            pendingForfeit = true       // AIs are acting; forfeit when the hand ends
+            return
+        }
+        completeForfeit()
+    }
+
+    private func completeForfeit() {
+        pendingForfeit = false
+        isHandRunning = true
+        if !engine.players[0].eliminated {
+            engine.forfeitHero()
+            eliminatedOrder.append("You")
+        }
+        Task { [weak self] in
+            guard let self else { return }
+            await self.resolveRemaining()
+            self.isHandRunning = false
+            self.finishTournament()
+        }
     }
 
     func dismissTournamentResult() {
